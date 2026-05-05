@@ -875,10 +875,12 @@ function programarRecordatoriosDiarios() {
   setTimeout(async () => {
     await enviarRecordatorios();
     verificarRecordatoriosElasticos();
+    verificarValoracionesPendientes();
     // Repetir cada 24 horas
     setInterval(() => {
       enviarRecordatorios();
       verificarRecordatoriosElasticos();
+      verificarValoracionesPendientes();
     }, 24 * 60 * 60 * 1000);
   }, msHasta8am);
 
@@ -913,6 +915,56 @@ async function enviarRecordatorios() {
 }
 
 programarRecordatoriosDiarios();
+
+// ─── SCHEDULER: seguimiento valoraciones pendientes ──────────────────────────
+async function verificarValoracionesPendientes() {
+  try {
+    const propuestas = readPropuestas();
+    const ahora = new Date();
+
+    for (const p of propuestas) {
+      if (p.estado !== 'pendiente') continue;
+      if (!p.telefono) continue;
+      if (p.seguimiento_enviado) continue;
+
+      const creada = new Date(p.creada);
+      const diasTranscurridos = Math.floor((ahora - creada) / (1000 * 60 * 60 * 24));
+
+      if (diasTranscurridos >= 3) {
+        const nombre = p.nombre.split(' ')[0];
+        const plan = (p.planes && p.planes[0]) ? p.planes[0] : { tratamiento: p.tratamiento };
+        const link = `${process.env.BASE_URL || 'https://portal-ortodoncia-production.up.railway.app'}/propuesta/${p.token}`;
+
+        const msg = `¡Hola ${nombre}! 😊
+
+Hace unos días te compartí tu valoración de ortodoncia con el Dr. Juan Camilo Correa y quería saber si tienes alguna pregunta.
+
+🦷 *${plan.tratamiento}*
+
+Muchos pacientes me preguntan si duele, cuánto tiempo lleva o si realmente vale la pena. La respuesta es sí — una sonrisa bien alineada cambia la confianza completamente.
+
+Puedes revisar tu propuesta aquí:
+👉 ${link}
+
+Si quieres hablar directamente conmigo, escríbeme. ¡Estoy disponible para resolver cualquier duda! 🙌
+
+— Dr. Juan Camilo Correa`;
+
+        await enviarWhatsApp(p.telefono, msg);
+
+        // Marcar como enviado
+        const idx = propuestas.indexOf(p);
+        propuestas[idx].seguimiento_enviado = true;
+        propuestas[idx].seguimiento_fecha = new Date().toISOString();
+        writePropuestas(propuestas);
+
+        console.log(`📲 Seguimiento enviado a ${p.nombre} (valoración ${p.token})`);
+      }
+    }
+  } catch(e) {
+    console.error('Error verificando valoraciones pendientes:', e.message);
+  }
+}
 
 
 app.post('/api/admin/whatsapp/recordatorios-masivos', adminAuth, async (req, res) => {
@@ -962,7 +1014,7 @@ app.post('/api/admin/propuestas', adminAuth, upload.fields([
       descripcion: ''
     }];
     const token = Math.random().toString(36).substr(2, 10) + Date.now().toString(36);
-    const expira = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const expira = new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString(); // Sin expiración práctica
 
     let fotoBase64 = null;
     let stlBase64 = null;
@@ -1102,7 +1154,7 @@ app.get('/api/propuesta/:token', (req, res) => {
   const propuestas = readPropuestas();
   const p = propuestas.find(pr => pr.token === req.params.token);
   if (!p) return res.status(404).json({ error: 'Propuesta no encontrada' });
-  if (new Date() > new Date(p.expira)) return res.status(410).json({ error: 'Esta propuesta ha expirado' });
+  // Sin expiración
   // No enviar STL crudo en esta llamada, se pide aparte
   const { stl, ...data } = p;
   res.json({ ...data, tieneStl: !!stl });

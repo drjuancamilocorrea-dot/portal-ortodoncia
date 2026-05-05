@@ -37,14 +37,7 @@
   .header p { font-size: 13px; color: var(--muted); margin-top: 4px; position: relative; }
 
   /* TIMER */
-  .timer-bar {
-    background: rgba(245,166,35,0.08);
-    border-bottom: 1px solid rgba(245,166,35,0.2);
-    padding: 10px 24px;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    font-size: 13px; color: var(--accent);
-  }
-  .timer-bar span { font-weight: 700; font-size: 15px; }
+
 
   /* MAIN */
   .main { max-width: 680px; margin: 0 auto; padding: 24px 16px 80px; }
@@ -351,7 +344,6 @@ async function init() {
     if (!r.ok) { mostrarError(); return; }
     propuestaData = await r.json();
     renderPropuesta(propuestaData);
-    iniciarTimer();
   } catch(e) { mostrarError(); }
 }
 
@@ -366,9 +358,7 @@ function renderPropuesta(p) {
       <p>Preparada especialmente para ti</p>
     </div>
 
-    <div class="timer-bar">
-      ⏳ Esta propuesta expira en: <span id="timer">--:--:--</span>
-    </div>
+
 
     <div class="main">
       <div class="greeting">
@@ -486,21 +476,7 @@ function renderPropuesta(p) {
   if (p.tieneStl) cargarSTL();
 }
 
-// TIMER
-function iniciarTimer() {
-  function actualizar() {
-    const el = document.getElementById('timer');
-    if (!el || !propuestaData) return;
-    const diff = new Date(propuestaData.expira) - Date.now();
-    if (diff <= 0) { mostrarExpirado(); return; }
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
-    el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  }
-  actualizar();
-  setInterval(actualizar, 1000);
-}
+
 
 // VISOR 3D STL
 let autoRotar = false;
