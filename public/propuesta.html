@@ -520,8 +520,7 @@ async function cargarSTL() {
 }
 
 function iniciarVisor3D(buffers) {
-  const buffer = Array.isArray(buffers) ? buffers[0] : buffers;
-  const buffer2 = Array.isArray(buffers) && buffers.length > 1 ? buffers[1] : null;
+  const allBuffers = Array.isArray(buffers) ? buffers : [buffers];
   const container = document.getElementById('visor3d');
   if (!container) return;
   const W = container.clientWidth, H = 300;
@@ -547,31 +546,34 @@ function iniciarVisor3D(buffers) {
   dir2.position.set(-5, -5, -5);
   scene.add(dir2);
 
-  // Parsear STL
-  const geo = parsearSTL(buffer);
-  geo.computeVertexNormals();
-  geo.center();
-  const box = new THREE.Box3().setFromObject(new THREE.Mesh(geo));
+  const colores = [0x00e5a0, 0x4499ff];
+  const meshes = [];
+  const geos = allBuffers.map(buf => {
+    const g = parsearSTL(buf);
+    g.computeVertexNormals();
+    return g;
+  });
+
+  // Calcular bounding box del conjunto sin centrar individualmente
+  const group = new THREE.Group();
+  geos.forEach((geo, i) => {
+    const mat = new THREE.MeshPhongMaterial({ color: colores[i % colores.length], specular: 0x333333, shininess: 60 });
+    const m = new THREE.Mesh(geo, mat);
+    group.add(m);
+    meshes.push(m);
+  });
+
+  // Centrar el grupo completo
+  const box = new THREE.Box3().setFromObject(group);
+  const center = box.getCenter(new THREE.Vector3());
   const size = box.getSize(new THREE.Vector3());
   const maxDim = Math.max(size.x, size.y, size.z);
   const scale = 3 / maxDim;
 
-  const mat = new THREE.MeshPhongMaterial({ color: 0x00e5a0, specular: 0x333333, shininess: 60 });
-  mesh = new THREE.Mesh(geo, mat);
-  mesh.scale.setScalar(scale);
-  scene.add(mesh);
-
-  // Segundo arco si existe
-  if (buffer2) {
-    const geo2 = parsearSTL(buffer2);
-    geo2.computeVertexNormals();
-    geo2.center();
-    const mat2 = new THREE.MeshPhongMaterial({ color: 0x4488ff, specular: 0x333333, shininess: 60 });
-    const mesh2 = new THREE.Mesh(geo2, mat2);
-    mesh2.scale.setScalar(scale);
-    mesh2.position.y = -1.5; // Separar arcos verticalmente
-    scene.add(mesh2);
-  }
+  group.position.sub(center.multiplyScalar(scale));
+  group.scale.setScalar(scale);
+  scene.add(group);
+  mesh = group;
 
   // Controles táctiles/mouse
   let isDragging = false, prevX = 0, prevY = 0;
@@ -639,11 +641,13 @@ function parsearSTL(buffer) {
   return geo;
 }
 
-function resetCamara() { if (mesh) { mesh.rotation.set(0,0,0); } }
+function resetCamara() { if (mesh) { mesh.rotation.set(0,0,0); mesh.position.set(0,0,0); } }
 function toggleAutoRotar() { autoRotar = !autoRotar; }
 function cambiarColor() {
   colorIdx = (colorIdx + 1) % colores.length;
-  if (mesh) mesh.material.color.set(colores[colorIdx]);
+  if (mesh) mesh.traverse(child => {
+    if (child.isMesh) child.material.color.set(colores[colorIdx]);
+  });
 }
 
 // MODAL
@@ -676,7 +680,7 @@ function mostrarExpirado() {
     <div class="expired-screen">
       <div class="icon">⏰</div>
       <h2>Esta propuesta ha expirado</h2>
-      <p>Las propuestas tienen vigencia de 24 horas. Comunícate con el Dr. Correa para recibir una nueva.</p>
+      <p>Este link no es válido. Comunícate con el Dr. Correa para recibir uno nuevo.</p>
       <a class="btn-wsp" href="https://wa.me/57?text=Hola+Dr.+Correa%2C+mi+propuesta+expiró%2C+¿puede+enviarme+una+nueva?" target="_blank" style="max-width:260px;margin-top:20px">
         💬 Contactar al Dr. Correa
       </a>
