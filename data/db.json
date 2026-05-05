@@ -1,0 +1,548 @@
+{
+  "admins": [
+    {
+      "id": "admin001",
+      "nombre": "Dr. Ortodoncista",
+      "email": "admin@consulta.com",
+      "password": "$2a$10$g6yWrxBtCE9GtPdTp3xzX.DAZVsGGH/wukRk9yK2PoDLrXnNcyuBK",
+      "rol": "admin"
+    },
+    {
+      "id": "aux001",
+      "nombre": "Auxiliar",
+      "email": "aux@consulta.com",
+      "password": "$2a$10$g6yWrxBtCE9GtPdTp3xzX.DAZVsGGH/wukRk9yK2PoDLrXnNcyuBK",
+      "rol": "admin"
+    }
+  ],
+  "pacientes": [
+    {
+      "id": "p001",
+      "nombre": "María García",
+      "email": "maria@demo.com",
+      "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+      "telefono": "+573001234567",
+      "tratamiento": "Alineadores Invisalign",
+      "inicio": "2026-01-15",
+      "duracion": 18,
+      "cambio_alineador_dias": 15,
+      "presupuesto": {
+        "total": 8500000,
+        "notas": "Incluye retención",
+        "abonos": [
+          {
+            "id": "ab1",
+            "monto": 2000000,
+            "descripcion": "Cuota inicial",
+            "fecha": "2026-01-15"
+          },
+          {
+            "id": "ab2",
+            "monto": 1000000,
+            "descripcion": "Cuota febrero",
+            "fecha": "2026-02-15"
+          },
+          {
+            "id": "ab3",
+            "monto": 1000000,
+            "descripcion": "Cuota marzo",
+            "fecha": "2026-03-15"
+          }
+        ]
+      },
+      "citas": [
+        {
+          "id": "c1",
+          "fecha": "2026-04-15",
+          "hora": "10:00",
+          "tipo": "Control de alineadores",
+          "estado": "proxima"
+        },
+        {
+          "id": "c2",
+          "fecha": "2026-05-20",
+          "hora": "09:30",
+          "tipo": "Control de alineadores",
+          "estado": "programada"
+        },
+        {
+          "id": "c3",
+          "fecha": "2026-02-18",
+          "hora": "10:00",
+          "tipo": "Control de alineadores",
+          "estado": "realizada"
+        }
+      ],
+      "progreso": [
+        {
+          "mes": 1,
+          "fecha": "2026-01-15",
+          "nota": "Inicio del tratamiento",
+          "foto": null
+        },
+        {
+          "mes": 2,
+          "fecha": "2026-02-18",
+          "nota": "Buen avance en alineación superior",
+          "foto": null
+        }
+      ]
+    },
+    {
+      "id": "p002",
+      "nombre": "Carlos Rodríguez",
+      "email": "carlos@demo.com",
+      "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+      "telefono": "+573009876543",
+      "tratamiento": "Brackets autoligado",
+      "inicio": "2025-10-01",
+      "duracion": 24,
+      "cambio_alineador_dias": null,
+      "presupuesto": {
+        "total": 6500000,
+        "notas": "",
+        "abonos": [
+          {
+            "id": "ab4",
+            "monto": 1500000,
+            "descripcion": "Cuota inicial",
+            "fecha": "2025-10-01"
+          },
+          {
+            "id": "ab5",
+            "monto": 500000,
+            "descripcion": "Cuota noviembre",
+            "fecha": "2025-11-01"
+          }
+        ]
+      },
+      "citas": [
+        {
+          "id": "c4",
+          "fecha": "2026-04-22",
+          "hora": "11:00",
+          "tipo": "Control de brackets",
+          "estado": "proxima"
+        },
+        {
+          "id": "c5",
+          "fecha": "2026-05-27",
+          "hora": "11:00",
+          "tipo": "Control de brackets",
+          "estado": "programada"
+        }
+      ],
+      "progreso": [
+        {
+          "mes": 1,
+          "fecha": "2025-10-01",
+          "nota": "Colocación de brackets",
+          "foto": null
+        }
+      ]
+    },
+    {
+      "id": "p1775942090683",
+      "nombre": "JUAN Camilo",
+      "email": "juan.correa9005@gmail.com",
+      "password": "$2a$10$t7d9hPeSLGgn7lWI3iBor.j49qmSU8Gn9UgaRl8dianljivkT9RbK",
+      "telefono": "+573136351602",
+      "direccion": "Calle 18 Sur # 35_56",
+      "tratamiento": "Brackets de zafiro",
+      "inicio": "2026-04-11",
+      "duracion": 18,
+      "cambio_alineador_dias": null,
+      "presupuesto": {
+        "total": 5800000,
+        "abonos": [
+          {
+            "id": "ab1775943139494",
+            "monto": 2200000,
+            "descripcion": "Cuota inicial",
+            "fecha": "2026-04-11"
+          },
+          {
+            "id": "ab1775943187505",
+            "monto": 200000,
+            "descripcion": "Cuota mensual abril de 2026",
+            "fecha": "2026-04-11"
+          },
+          {
+            "id": "ab1776354009179",
+            "monto": 200000,
+            "descripcion": "Cuota mensual abril de 2026",
+            "fecha": "2026-04-16"
+          },
+          {
+            "id": "ab1776354010756",
+            "monto": 200000,
+            "descripcion": "Cuota mensual abril de 2026",
+            "fecha": "2026-04-16"
+          }
+        ],
+        "notas": "",
+        "tipo_ortodoncia": "Brackets de zafiro",
+        "cuota_inicial": 2200000,
+        "num_cuotas": 18,
+        "valor_cuota": 200000
+      },
+      "citas": [
+        {
+          "id": "c1775943115677",
+          "fecha": "2026-04-13",
+          "hora": "08:00",
+          "tipo": "Inicio con brackets",
+          "estado": "realizada",
+          "notas_clinicas": "Inicia ortodoncia ",
+          "bracket_reparado": false,
+          "evolucion_registrada": true
+        },
+        {
+          "id": "c1775943165296",
+          "fecha": "2026-04-14",
+          "hora": "08:00",
+          "tipo": "Control de brackets",
+          "estado": "realizada",
+          "notas_clinicas": "montaje inf ",
+          "bracket_reparado": false,
+          "evolucion_registrada": true
+        },
+        {
+          "id": "c1775943208334",
+          "fecha": "2026-04-15",
+          "hora": "08:00",
+          "tipo": "Control de brackets",
+          "estado": "no_asistio",
+          "notas_clinicas": "No asiste a sicita ",
+          "bracket_reparado": false,
+          "evolucion_registrada": true
+        },
+        {
+          "id": "c1776351165896",
+          "fecha": "2026-04-16",
+          "hora": "13:10",
+          "tipo": "Control de brackets",
+          "estado": "programada"
+        },
+        {
+          "id": "c1776351243488",
+          "fecha": "2026-04-16",
+          "hora": "09:00",
+          "tipo": "Control de brackets",
+          "estado": "realizada"
+        },
+        {
+          "id": "c1776351739056",
+          "fecha": "2026-04-16",
+          "hora": "09:00",
+          "tipo": "Inicio con brackets",
+          "estado": "programada"
+        },
+        {
+          "id": "c1776351755045",
+          "fecha": "2026-04-16",
+          "hora": "09:30",
+          "tipo": "Inicio con brackets",
+          "estado": "realizada"
+        },
+        {
+          "id": "c1776353404515",
+          "fecha": "2026-04-16",
+          "hora": "09:45",
+          "tipo": "Inicio con brackets",
+          "estado": "programada"
+        },
+        {
+          "id": "c1776353413167",
+          "fecha": "2026-04-16",
+          "hora": "15:30",
+          "tipo": "Inicio con brackets",
+          "estado": "programada"
+        },
+        {
+          "id": "c1776353424976",
+          "fecha": "2026-04-17",
+          "hora": "10:00",
+          "tipo": "Inicio con brackets",
+          "estado": "realizada"
+        },
+        {
+          "id": "c1776353966167",
+          "fecha": "2026-04-17",
+          "hora": "10:30",
+          "tipo": "Inicio con brackets",
+          "estado": "realizada",
+          "notas_clinicas": "",
+          "bracket_reparado": false,
+          "evolucion_registrada": true,
+          "elastico": "13 → 46 | 23 → 36"
+        },
+        {
+          "id": "c1776367460358",
+          "fecha": "2026-04-17",
+          "hora": "12:30",
+          "tipo": "Inicio con brackets",
+          "estado": "realizada",
+          "notas_clinicas": "Paciente asiste a consulta, elasticos clase III bilateral ",
+          "bracket_reparado": false,
+          "evolucion_registrada": true,
+          "elastico": "13 → 46 | 22 → 36"
+        },
+        {
+          "id": "c1776383414456",
+          "fecha": "2026-04-17",
+          "hora": "20:00",
+          "tipo": "Inicio con alineadores",
+          "estado": "programada"
+        },
+        {
+          "id": "c1776383439351",
+          "fecha": "2026-04-17",
+          "hora": "10:00",
+          "tipo": "Inicio con alineadores",
+          "estado": "programada"
+        },
+        {
+          "id": "c1776383454751",
+          "fecha": "2026-04-17",
+          "hora": "15:30",
+          "tipo": "Inicio con alineadores",
+          "estado": "realizada"
+        },
+        {
+          "id": "c1776383665306",
+          "fecha": "2026-04-17",
+          "hora": "14:30",
+          "tipo": "Inicio con alineadores",
+          "estado": "realizada"
+        },
+        {
+          "id": "c1776383789105",
+          "fecha": "2026-04-17",
+          "hora": "11:30",
+          "tipo": "Inicio con brackets",
+          "estado": "realizada",
+          "notas_clinicas": "",
+          "bracket_reparado": false,
+          "evolucion_registrada": true,
+          "elastico": "13,15 → 43,45 | 22,24 → 35,36"
+        },
+        {
+          "id": "c1776385389159",
+          "fecha": "2026-04-17",
+          "hora": "16:30",
+          "tipo": "Inicio con brackets",
+          "estado": "realizada"
+        },
+        {
+          "id": "c1776385701901",
+          "fecha": "2026-04-20",
+          "hora": "08:00",
+          "tipo": "Inicio con brackets",
+          "estado": "realizada"
+        },
+        {
+          "id": "c1776387258463",
+          "fecha": "2026-04-17",
+          "hora": "13:00",
+          "tipo": "Inicio con brackets",
+          "estado": "cancelada"
+        },
+        {
+          "id": "c1776387274965",
+          "fecha": "2026-04-17",
+          "hora": "13:30",
+          "tipo": "Inicio con brackets",
+          "estado": "realizada",
+          "notas_clinicas": "",
+          "bracket_reparado": false,
+          "evolucion_registrada": true,
+          "elastico": "13,23 → 33,43 | 24 → 37 | 14 → 47"
+        }
+      ],
+      "progreso": [],
+      "gamificacion": {
+        "historial": [
+          {
+            "fecha": "2026-04-11",
+            "tipo": "cita_cumplida",
+            "puntos": 100,
+            "desc": "Cita cumplida"
+          },
+          {
+            "fecha": "2026-04-11",
+            "tipo": "cita_cumplida",
+            "puntos": 100,
+            "desc": "Cita cumplida"
+          },
+          {
+            "fecha": "2026-04-11",
+            "tipo": "buena_higiene",
+            "puntos": 50,
+            "desc": "Buena higiene en control"
+          },
+          {
+            "fecha": "2026-04-11",
+            "tipo": "sin_brackets_caidos",
+            "puntos": 50,
+            "desc": "Control sin brackets caídos"
+          },
+          {
+            "fecha": "2026-04-16",
+            "tipo": "cita_cumplida",
+            "puntos": 100,
+            "desc": "Cita cumplida"
+          },
+          {
+            "fecha": "2026-04-16",
+            "tipo": "buena_higiene",
+            "puntos": 50,
+            "desc": "Buena higiene en control"
+          },
+          {
+            "fecha": "2026-04-16",
+            "tipo": "sin_brackets_caidos",
+            "puntos": 50,
+            "desc": "Control sin brackets caídos"
+          },
+          {
+            "fecha": "2026-04-16",
+            "tipo": "racha_6",
+            "puntos": 150,
+            "desc": "¡6 citas seguidas!"
+          },
+          {
+            "fecha": "2026-04-16",
+            "tipo": "cita_cumplida",
+            "puntos": 100,
+            "desc": "Cita cumplida"
+          },
+          {
+            "fecha": "2026-04-16",
+            "tipo": "buena_higiene",
+            "puntos": 50,
+            "desc": "Buena higiene en control"
+          },
+          {
+            "fecha": "2026-04-16",
+            "tipo": "sin_brackets_caidos",
+            "puntos": 50,
+            "desc": "Control sin brackets caídos"
+          },
+          {
+            "fecha": "2026-04-16",
+            "tipo": "racha_6",
+            "puntos": 150,
+            "desc": "¡6 citas seguidas!"
+          },
+          {
+            "fecha": "2026-04-16",
+            "tipo": "cita_cumplida",
+            "puntos": 100,
+            "desc": "Cita cumplida"
+          },
+          {
+            "fecha": "2026-04-16",
+            "tipo": "buena_higiene",
+            "puntos": 50,
+            "desc": "Buena higiene en control"
+          },
+          {
+            "fecha": "2026-04-16",
+            "tipo": "sin_brackets_caidos",
+            "puntos": 50,
+            "desc": "Control sin brackets caídos"
+          },
+          {
+            "fecha": "2026-04-16",
+            "tipo": "cita_cumplida",
+            "puntos": 100,
+            "desc": "Cita cumplida"
+          }
+        ],
+        "referido_codigo": "JUAN26",
+        "referidos": []
+      },
+      "elastico_activo": "13,23 → 33,43 | 24 → 37 | 14 → 47"
+    },
+    {
+      "id": "p1776379067226",
+      "nombre": "Santiago Donoso",
+      "email": "santiagodonoso3@gmail.com",
+      "password": "$2a$10$LFdLiDDxzmDbM8PpSwRJ6eAEMjsYIiTZ2DGy/21MoWiw1NfJSnUku",
+      "telefono": "+573142689276",
+      "direccion": "calle 7 b # 27 -95",
+      "tratamiento": "Alineadores",
+      "inicio": "2026-04-16",
+      "duracion": 18,
+      "cambio_alineador_dias": null,
+      "presupuesto": {
+        "total": 7500000,
+        "abonos": [
+          {
+            "id": "ab1776379383577",
+            "monto": 3000000,
+            "descripcion": "Cuota inicial",
+            "fecha": "2026-04-16"
+          }
+        ],
+        "notas": "",
+        "tipo_ortodoncia": "Alineadores",
+        "cuota_inicial": 3000000,
+        "num_cuotas": 6,
+        "valor_cuota": 750000
+      },
+      "citas": [
+        {
+          "id": "c1776379215138",
+          "fecha": "2026-04-16",
+          "hora": "11:00",
+          "tipo": "Inicio con alineadores",
+          "estado": "realizada",
+          "notas_clinicas": "sasiste aconsulta xxxx",
+          "bracket_reparado": false,
+          "evolucion_registrada": true,
+          "elastico": "16 → 43 | 26 → 33"
+        }
+      ],
+      "progreso": [],
+      "gamificacion": {
+        "historial": [
+          {
+            "fecha": "2026-04-16",
+            "tipo": "cita_cumplida",
+            "puntos": 100,
+            "desc": "Cita cumplida"
+          },
+          {
+            "fecha": "2026-04-16",
+            "tipo": "cambio_alineador_en_fecha",
+            "puntos": 50,
+            "desc": "Cambio de alineador en fecha"
+          }
+        ],
+        "referido_codigo": "SANTIAGO26",
+        "referidos": []
+      },
+      "elastico_activo": "16 → 43 | 26 → 33"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "r1",
+      "paciente_id": "p001",
+      "nombre": "María G.",
+      "rating": 5,
+      "texto": "El tratamiento ha superado mis expectativas.",
+      "fecha": "2026-03-10"
+    },
+    {
+      "id": "r2",
+      "paciente_id": "p002",
+      "nombre": "Carlos R.",
+      "rating": 5,
+      "texto": "La tecnología que usan es impresionante.",
+      "fecha": "2026-02-22"
+    }
+  ]
+}
