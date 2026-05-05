@@ -1438,7 +1438,7 @@ async function crearPropuesta() {
     const stlFile = document.getElementById('pp-stl')?.files?.[0];
     if (stlFile) fd.append('stl', stlFile);
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('ortho_admin_token');
     const r = await fetch('/api/admin/propuestas', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
@@ -1487,7 +1487,7 @@ async function simularSonrisa() {
   const btn = document.getElementById('btn-simular');
   btn.disabled = true; btn.textContent = '⏳ Generando simulación... (30s)';
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('ortho_admin_token');
     const r = await fetch(`/api/admin/propuestas/${propuestaTokenActual}/simular`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -1504,7 +1504,7 @@ async function simularSonrisa() {
 }
 
 async function simularExistente(token) {
-  const adminToken = localStorage.getItem('token');
+  const adminToken = localStorage.getItem('ortho_admin_token');
   const r = await fetch(`/api/admin/propuestas/${token}/simular`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
