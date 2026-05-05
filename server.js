@@ -1002,7 +1002,7 @@ function writePropuestas(data) { fs.writeFileSync(PROPUESTAS_PATH, JSON.stringif
 // Crear propuesta
 app.post('/api/admin/propuestas', adminAuth, upload.fields([
   { name: 'foto', maxCount: 1 },
-  { name: 'stl', maxCount: 1 }
+  { name: 'stl', maxCount: 2 }
 ]), async (req, res) => {
   try {
     const { nombre, telefono, tratamiento, duracion, presupuesto_total, cuota_inicial, cuota_mensual, notas, planes: planesStr } = req.body;
@@ -1023,9 +1023,15 @@ app.post('/api/admin/propuestas', adminAuth, upload.fields([
       const f = req.files.foto[0];
       fotoBase64 = `data:${f.mimetype};base64,${f.buffer.toString('base64')}`;
     }
-    if (req.files?.stl?.[0]) {
-      const s = req.files.stl[0];
-      stlBase64 = `data:application/octet-stream;base64,${s.buffer.toString('base64')}`;
+  if (req.files?.stl?.length > 0) {
+      // Guardar todos los STL como array
+      const stlFiles = req.files.stl;
+      if (stlFiles.length === 1) {
+        stlBase64 = `data:application/octet-stream;base64,${stlFiles[0].buffer.toString('base64')}`;
+      } else {
+        // Múltiples arcos - guardar como JSON array
+        stlBase64 = JSON.stringify(stlFiles.map(s => `data:application/octet-stream;base64,${s.buffer.toString('base64')}`));
+      }
     }
 
     const propuesta = {

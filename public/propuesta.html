@@ -489,18 +489,39 @@ async function cargarSTL() {
     const r = await fetch(`/api/propuesta/${token}/stl`);
     const d = await r.json();
     if (!d.stl) return;
-    const base64 = d.stl.split(',')[1];
-    const bin = atob(base64);
-    const buf = new ArrayBuffer(bin.length);
-    const view = new Uint8Array(buf);
-    for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i);
-    iniciarVisor3D(buf);
+
+    // Detectar si es múltiples STL (JSON array) o uno solo
+    let stlBuffers = [];
+    try {
+      const parsed = JSON.parse(d.stl);
+      if (Array.isArray(parsed)) {
+        stlBuffers = parsed.map(b64str => {
+          const base64 = b64str.split(',')[1];
+          const bin = atob(base64);
+          const buf = new ArrayBuffer(bin.length);
+          const view = new Uint8Array(buf);
+          for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i);
+          return buf;
+        });
+      }
+    } catch(e) {
+      // STL simple
+      const base64 = d.stl.split(',')[1];
+      const bin = atob(base64);
+      const buf = new ArrayBuffer(bin.length);
+      const view = new Uint8Array(buf);
+      for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i);
+      stlBuffers = [buf];
+    }
+    iniciarVisor3D(stlBuffers);
   } catch(e) {
     document.getElementById('visor3d').innerHTML = '<div class="no-stl"><span style="font-size:32px">🦷</span><span>No se pudo cargar el modelo 3D</span></div>';
   }
 }
 
-function iniciarVisor3D(buffer) {
+function iniciarVisor3D(buffers) {
+  const buffer = Array.isArray(buffers) ? buffers[0] : buffers;
+  const buffer2 = Array.isArray(buffers) && buffers.length > 1 ? buffers[1] : null;
   const container = document.getElementById('visor3d');
   if (!container) return;
   const W = container.clientWidth, H = 300;
@@ -539,6 +560,18 @@ function iniciarVisor3D(buffer) {
   mesh = new THREE.Mesh(geo, mat);
   mesh.scale.setScalar(scale);
   scene.add(mesh);
+
+  // Segundo arco si existe
+  if (buffer2) {
+    const geo2 = parsearSTL(buffer2);
+    geo2.computeVertexNormals();
+    geo2.center();
+    const mat2 = new THREE.MeshPhongMaterial({ color: 0x4488ff, specular: 0x333333, shininess: 60 });
+    const mesh2 = new THREE.Mesh(geo2, mat2);
+    mesh2.scale.setScalar(scale);
+    mesh2.position.y = -1.5; // Separar arcos verticalmente
+    scene.add(mesh2);
+  }
 
   // Controles táctiles/mouse
   let isDragging = false, prevX = 0, prevY = 0;
