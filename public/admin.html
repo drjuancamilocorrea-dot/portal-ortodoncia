@@ -408,42 +408,72 @@
       </div>
     </div>
 
-    <!-- MODAL NUEVA PROPUESTA -->
-    <div id="modal-propuesta" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:200;overflow-y:auto;">
-      <div style="max-width:560px;margin:40px auto;padding:16px;">
-        <div class="card" style="padding:28px;">
-          <h2 style="margin-bottom:4px;font-size:18px;">✨ Nueva Valoración</h2>
-          <p style="font-size:13px;color:var(--text2);margin-bottom:24px;">Link único válido por 24 horas</p>
-          <div style="display:grid;gap:14px;">
-            <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">NOMBRE DEL PACIENTE *</label><input id="pp-nombre" class="inp" type="text" placeholder="Ej: María González"></div>
-            <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">TELÉFONO (WhatsApp)</label><input id="pp-tel" class="inp" type="text" placeholder="+57 300 000 0000"></div>
-            <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">TRATAMIENTO *</label>
-              <select id="pp-trat" class="inp"><option>Ortodoncia con alineadores Invisalign</option><option>Ortodoncia con brackets metálicos</option><option>Ortodoncia con brackets estéticos</option><option>Ortodoncia con brackets de zafiro</option><option>Retenedores</option></select>
+    <!-- MODAL NUEVA VALORACIÓN CON PLANES -->
+    <div id="modal-propuesta" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:200;overflow-y:auto;">
+      <div style="max-width:680px;margin:32px auto;padding:16px;">
+        <div class="card" style="padding:0;overflow:hidden;">
+          <!-- Header -->
+          <div style="background:linear-gradient(135deg,rgba(0,229,160,0.1),rgba(0,150,100,0.05));border-bottom:1px solid var(--border);padding:20px 24px;display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;background:rgba(0,229,160,0.15);border:1px solid rgba(0,229,160,0.3);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">✨</div>
+            <div>
+              <div style="font-size:16px;font-weight:700;">Nueva Valoración</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:2px;">Link único válido por 24 horas · Puedes agregar varios planes</div>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">DURACIÓN (meses)</label><input id="pp-dur" class="inp" type="number" value="18" min="1"></div>
-              <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">PRESUPUESTO TOTAL</label><input id="pp-total" class="inp" type="number" placeholder="8500000"></div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">CUOTA INICIAL</label><input id="pp-inicial" class="inp" type="number" placeholder="2000000"></div>
-              <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">CUOTA MENSUAL</label><input id="pp-mensual" class="inp" type="number" placeholder="350000"></div>
-            </div>
-            <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">FOTO DEL PACIENTE (para simulación IA)</label><label class="file-picker" for="pp-foto">
-                    <span style="font-size:18px;">🖼️</span>
-                    <span style="font-size:12px;color:var(--text2);" id="foto-label">Seleccionar imagen...</span>
-                    <input id="pp-foto" type="file" accept="image/*" style="display:none;" onchange="document.getElementById('foto-label').textContent=this.files[0]?.name||'Seleccionar imagen...'">
-                  </label></div>
-            <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">MODELO 3D DEL iTERO (.stl)</label><label class="file-picker" for="pp-stl">
-                    <span style="font-size:18px;">📐</span>
-                    <span style="font-size:12px;color:var(--text2);" id="stl-label">Seleccionar .stl...</span>
-                    <input id="pp-stl" type="file" accept=".stl" style="display:none;" onchange="document.getElementById('stl-label').textContent=this.files[0]?.name||'Seleccionar .stl...'">
-                  </label></div>
-            <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">NOTAS DEL DOCTOR</label><textarea id="pp-notas" class="inp" rows="3" placeholder="Ej: Caso moderado. Requiere extracción de 2 premolares. Excelente pronóstico." style="resize:vertical;"></textarea></div>
-            <div id="pp-error" style="display:none;color:#ff6b6b;font-size:13px;padding:10px;background:rgba(255,107,107,0.1);border-radius:8px;"></div>
+            <button onclick="document.getElementById('modal-propuesta').style.display='none'" style="margin-left:auto;background:transparent;border:none;color:var(--text2);font-size:22px;cursor:pointer;">×</button>
           </div>
-          <div style="display:flex;gap:10px;margin-top:20px;">
-            <button id="btn-guardar-propuesta" class="btn btn-warn" style="flex:1;">✨ Crear valoración y generar link</button>
-            <button onclick="document.getElementById('modal-propuesta').style.display='none'" class="btn" style="background:transparent;border:1px solid var(--border);">Cancelar</button>
+
+          <div style="padding:24px;">
+            <!-- Datos del paciente -->
+            <div style="font-size:11px;font-weight:700;color:#00e5a0;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">👤 Datos del Paciente</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+              <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">Nombre completo *</label><input id="pp-nombre" class="inp" type="text" placeholder="Ej: María González"></div>
+              <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">Teléfono WhatsApp</label><input id="pp-tel" class="inp" type="text" placeholder="+57 300 000 0000"></div>
+            </div>
+
+            <!-- Archivos -->
+            <div style="font-size:11px;font-weight:700;color:#a78bfa;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">📁 Archivos del Caso</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+              <div>
+                <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">📸 Foto del paciente</label>
+                <label class="file-picker" for="pp-foto">
+                  <span style="font-size:16px;">🖼️</span>
+                  <span style="font-size:12px;color:var(--text2);" id="foto-label">Seleccionar imagen...</span>
+                  <input id="pp-foto" type="file" accept="image/*" style="display:none;" onchange="document.getElementById('foto-label').textContent=this.files[0]?.name||'Seleccionar imagen...'">
+                </label>
+              </div>
+              <div>
+                <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">🦷 Modelo 3D iTero (.stl)</label>
+                <label class="file-picker" for="pp-stl">
+                  <span style="font-size:16px;">📐</span>
+                  <span style="font-size:12px;color:var(--text2);" id="stl-label">Seleccionar .stl...</span>
+                  <input id="pp-stl" type="file" accept=".stl" style="display:none;" onchange="document.getElementById('stl-label').textContent=this.files[0]?.name||'Seleccionar .stl...'">
+                </label>
+              </div>
+            </div>
+
+            <!-- Notas generales -->
+            <div style="margin-bottom:20px;">
+              <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">📝 Notas clínicas generales</label>
+              <textarea id="pp-notas" class="inp" rows="2" placeholder="Ej: Mordida cruzada anterior. Apiñamiento moderado. Excelente pronóstico." style="resize:vertical;width:100%;"></textarea>
+            </div>
+
+            <!-- PLANES DE TRATAMIENTO -->
+            <div style="font-size:11px;font-weight:700;color:var(--warn);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">💰 Planes de Tratamiento</div>
+            <div id="planes-container" style="display:grid;gap:12px;margin-bottom:12px;"></div>
+            <button onclick="agregarPlan()" style="width:100%;background:rgba(245,166,35,0.06);border:1px dashed rgba(245,166,35,0.3);color:var(--warn);padding:10px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(245,166,35,0.12)'" onmouseout="this.style.background='rgba(245,166,35,0.06)'">
+              + Agregar otro plan
+            </button>
+
+            <div id="pp-error" style="display:none;color:#ff6b6b;font-size:13px;padding:10px;background:rgba(255,107,107,0.1);border-radius:8px;margin-top:12px;"></div>
+
+            <div style="display:flex;gap:10px;margin-top:20px;">
+              <button id="btn-guardar-propuesta" style="flex:1;background:linear-gradient(135deg,#00e5a0,#00c47a);color:#000;border:none;padding:13px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">
+                ✨ Crear valoración y generar link
+              </button>
+              <button onclick="document.getElementById('modal-propuesta').style.display='none'" style="background:transparent;border:1px solid var(--border);color:var(--text2);padding:13px 18px;border-radius:10px;cursor:pointer;font-size:14px;">
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       </div>

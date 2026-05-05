@@ -953,7 +953,14 @@ app.post('/api/admin/propuestas', adminAuth, upload.fields([
   { name: 'stl', maxCount: 1 }
 ]), async (req, res) => {
   try {
-    const { nombre, telefono, tratamiento, duracion, presupuesto_total, cuota_inicial, cuota_mensual, notas } = req.body;
+    const { nombre, telefono, tratamiento, duracion, presupuesto_total, cuota_inicial, cuota_mensual, notas, planes: planesStr } = req.body;
+    const planes = planesStr ? JSON.parse(planesStr) : [{
+      id: 0, tratamiento, duracion: parseInt(duracion)||18,
+      presupuesto_total: parseInt(presupuesto_total)||0,
+      cuota_inicial: parseInt(cuota_inicial)||0,
+      cuota_mensual: parseInt(cuota_mensual)||0,
+      descripcion: ''
+    }];
     const token = Math.random().toString(36).substr(2, 10) + Date.now().toString(36);
     const expira = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
@@ -981,6 +988,7 @@ app.post('/api/admin/propuestas', adminAuth, upload.fields([
       cuota_inicial: parseInt(cuota_inicial) || 0,
       cuota_mensual: parseInt(cuota_mensual) || 0,
       notas: notas || '',
+      planes,
       foto: fotoBase64,
       stl: stlBase64,
       simulacion: null,
@@ -1118,6 +1126,13 @@ app.post('/api/propuesta/:token/aceptar', async (req, res) => {
     if (new Date() > new Date(propuestas[idx].expira)) return res.status(410).json({ error: 'Expirada' });
 
     const p = propuestas[idx];
+    // Obtener plan seleccionado
+    const planIdx = parseInt(req.body.planIdx) || 0;
+    const plan = (p.planes && p.planes[planIdx]) ? p.planes[planIdx] : {
+      tratamiento: p.tratamiento, duracion: p.duracion,
+      presupuesto_total: p.presupuesto_total, cuota_inicial: p.cuota_inicial,
+      cuota_mensual: p.cuota_mensual
+    };
     const db = readDB();
 
     // Verificar que no exista ya
@@ -1135,13 +1150,13 @@ app.post('/api/propuesta/:token/aceptar', async (req, res) => {
       email: '',
       password: hash,
       telefono: p.telefono,
-      tratamiento: p.tratamiento,
+      tratamiento: plan.tratamiento,
       inicio: new Date().toISOString().split('T')[0],
-      duracion: p.duracion,
+      duracion: plan.duracion,
       cambio_alineador_dias: null,
       presupuesto: {
-        total: p.presupuesto_total,
-        notas: `Cuota inicial: $${p.cuota_inicial.toLocaleString()} | Cuota mensual: $${p.cuota_mensual.toLocaleString()}`,
+        total: plan.presupuesto_total,
+        notas: `Plan elegido: ${plan.tratamiento} | Cuota inicial: $${plan.cuota_inicial.toLocaleString()} | Cuota mensual: $${plan.cuota_mensual.toLocaleString()}`,
         abonos: []
       },
       citas: [],

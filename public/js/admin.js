@@ -1418,6 +1418,12 @@ async function crearPropuesta() {
   const errEl = document.getElementById('pp-error');
   if (!nombre) { errEl.textContent = 'El nombre es obligatorio'; errEl.style.display = 'block'; return; }
 
+  const planes = obtenerPlanes();
+  if (planes.length === 0) { errEl.textContent = 'Agrega al menos un plan de tratamiento'; errEl.style.display = 'block'; return; }
+  if (planes.some(p => !p.tratamiento || p.presupuesto_total === 0)) {
+    errEl.textContent = 'Completa el tratamiento y presupuesto de cada plan'; errEl.style.display = 'block'; return;
+  }
+
   const btn = document.getElementById('btn-guardar-propuesta');
   btn.disabled = true; btn.textContent = 'Creando...';
   errEl.style.display = 'none';
@@ -1426,11 +1432,13 @@ async function crearPropuesta() {
     const fd = new FormData();
     fd.append('nombre', nombre);
     fd.append('telefono', document.getElementById('pp-tel')?.value || '');
-    fd.append('tratamiento', document.getElementById('pp-trat')?.value || '');
-    fd.append('duracion', document.getElementById('pp-dur')?.value || '18');
-    fd.append('presupuesto_total', document.getElementById('pp-total')?.value || '0');
-    fd.append('cuota_inicial', document.getElementById('pp-inicial')?.value || '0');
-    fd.append('cuota_mensual', document.getElementById('pp-mensual')?.value || '0');
+    fd.append('planes', JSON.stringify(planes));
+    // Compatibilidad con campos simples (usar primer plan)
+    fd.append('tratamiento', planes[0].tratamiento);
+    fd.append('duracion', planes[0].duracion);
+    fd.append('presupuesto_total', planes[0].presupuesto_total);
+    fd.append('cuota_inicial', planes[0].cuota_inicial);
+    fd.append('cuota_mensual', planes[0].cuota_mensual);
     fd.append('notas', document.getElementById('pp-notas')?.value || '');
 
     const fotoFile = document.getElementById('pp-foto')?.files?.[0];
@@ -1528,3 +1536,125 @@ document.addEventListener('click', (e) => {
     setTimeout(cargarPropuestas, 100);
   }
 });
+
+// Calculadora cuota mensual en valoraciones
+function calcCuotaVal() {
+  const total = parseFloat(document.getElementById('pp-total')?.value) || 0;
+  const inicial = parseFloat(document.getElementById('pp-inicial')?.value) || 0;
+  const meses = parseFloat(document.getElementById('pp-dur')?.value) || 1;
+  const cuota = meses > 0 ? Math.round((total - inicial) / meses) : 0;
+  const display = document.getElementById('pp-mensual-display');
+  const hidden = document.getElementById('pp-mensual');
+  if (display) display.textContent = cuota > 0 ? '$ ' + cuota.toLocaleString('es-CO') + ' / mes' : '$ 0 / mes';
+  if (hidden) hidden.value = cuota;
+}
+
+// ═══════════════════════════════════════════════════
+// PLANES MÚLTIPLES EN VALORACIONES
+// ═══════════════════════════════════════════════════
+let numPlanes = 0;
+
+function planHTML(idx) {
+  const colores = ['rgba(0,229,160,0.08)', 'rgba(99,102,241,0.08)', 'rgba(245,166,35,0.08)'];
+  const bordes = ['rgba(0,229,160,0.25)', 'rgba(99,102,241,0.25)', 'rgba(245,166,35,0.25)'];
+  const iconos = ['🥇', '🥈', '🥉'];
+  const color = colores[idx % colores.length];
+  const borde = bordes[idx % bordes.length];
+  const icono = iconos[idx % iconos.length];
+  const tratamientos = ['Ortodoncia con alineadores Invisalign','Ortodoncia con brackets metálicos','Ortodoncia con brackets estéticos','Ortodoncia con brackets de zafiro','Retenedores'];
+  const opts = tratamientos.map(t => `<option>${t}</option>`).join('');
+  return `
+  <div id="plan-${idx}" style="background:${color};border:1px solid ${borde};border-radius:12px;padding:16px;position:relative;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:700;">${icono} Plan ${idx + 1}</div>
+      ${idx > 0 ? `<button onclick="eliminarPlan(${idx})" style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.2);color:#ff6b6b;padding:3px 10px;border-radius:6px;font-size:12px;cursor:pointer;">✕ Quitar</button>` : ''}
+    </div>
+    <div style="display:grid;gap:10px;">
+      <div>
+        <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Tratamiento *</label>
+        <select id="plan-trat-${idx}" class="inp">${opts}</select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div>
+          <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Duración (meses)</label>
+          <input id="plan-dur-${idx}" class="inp" type="number" value="18" min="1" oninput="calcPlan(${idx})">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Total</label>
+          <input id="plan-total-${idx}" class="inp" type="number" placeholder="8500000" oninput="calcPlan(${idx})">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Cuota inicial</label>
+          <input id="plan-inicial-${idx}" class="inp" type="number" placeholder="2000000" oninput="calcPlan(${idx})">
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.2);border-radius:8px;padding:10px 14px;">
+        <span style="font-size:11px;color:var(--text2);">Cuota mensual · (Total - Inicial) ÷ Meses</span>
+        <span id="plan-cuota-${idx}" style="font-size:16px;font-weight:800;color:#00e5a0;">$ 0 / mes</span>
+        <input type="hidden" id="plan-mensual-${idx}" value="0">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Descripción del plan (opcional)</label>
+        <input id="plan-desc-${idx}" class="inp" type="text" placeholder="Ej: Opción premium · Mayor precisión · Invisible">
+      </div>
+    </div>
+  </div>`;
+}
+
+function calcPlan(idx) {
+  const total = parseFloat(document.getElementById(`plan-total-${idx}`)?.value) || 0;
+  const inicial = parseFloat(document.getElementById(`plan-inicial-${idx}`)?.value) || 0;
+  const meses = parseFloat(document.getElementById(`plan-dur-${idx}`)?.value) || 1;
+  const cuota = meses > 0 ? Math.round((total - inicial) / meses) : 0;
+  const display = document.getElementById(`plan-cuota-${idx}`);
+  const hidden = document.getElementById(`plan-mensual-${idx}`);
+  if (display) display.textContent = cuota > 0 ? '$ ' + cuota.toLocaleString('es-CO') + ' / mes' : '$ 0 / mes';
+  if (hidden) hidden.value = cuota;
+}
+
+function agregarPlan() {
+  if (numPlanes >= 3) { alert('Máximo 3 planes por valoración'); return; }
+  const container = document.getElementById('planes-container');
+  if (container) {
+    const div = document.createElement('div');
+    div.innerHTML = planHTML(numPlanes);
+    container.appendChild(div.firstElementChild);
+    numPlanes++;
+  }
+}
+
+function eliminarPlan(idx) {
+  const el = document.getElementById(`plan-${idx}`);
+  if (el) el.parentElement.remove();
+}
+
+function obtenerPlanes() {
+  const planes = [];
+  for (let i = 0; i < numPlanes; i++) {
+    const el = document.getElementById(`plan-${i}`);
+    if (!el) continue;
+    planes.push({
+      id: i,
+      tratamiento: document.getElementById(`plan-trat-${i}`)?.value || '',
+      duracion: parseInt(document.getElementById(`plan-dur-${i}`)?.value) || 18,
+      presupuesto_total: parseInt(document.getElementById(`plan-total-${i}`)?.value) || 0,
+      cuota_inicial: parseInt(document.getElementById(`plan-inicial-${i}`)?.value) || 0,
+      cuota_mensual: parseInt(document.getElementById(`plan-mensual-${i}`)?.value) || 0,
+      descripcion: document.getElementById(`plan-desc-${i}`)?.value || ''
+    });
+  }
+  return planes;
+}
+
+// Override limpiarFormPropuesta para inicializar planes
+const _origLimpiar = typeof limpiarFormPropuesta === 'function' ? limpiarFormPropuesta : null;
+function limpiarFormPropuesta() {
+  ['pp-nombre','pp-tel','pp-notas'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const err = document.getElementById('pp-error');
+  if (err) { err.style.display = 'none'; err.textContent = ''; }
+  // Resetear planes
+  numPlanes = 0;
+  const container = document.getElementById('planes-container');
+  if (container) container.innerHTML = '';
+  agregarPlan(); // Agregar primer plan por defecto
+}
