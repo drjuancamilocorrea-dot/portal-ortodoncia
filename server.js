@@ -1020,47 +1020,66 @@ app.post('/api/admin/propuestas/:token/simular', adminAuth, async (req, res) => 
     const base64Data = propuesta.foto.split(',')[1];
     const mimeType = propuesta.foto.split(';')[0].split(':')[1];
 
-    // Primero analizar la foto con vision para describir la sonrisa
-    const visionResp = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_KEY}` },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        max_tokens: 300,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Data}` } },
-            { type: 'text', text: 'Describe SOLO los dientes y sonrisa de esta persona en máximo 3 líneas: color, alineación, espacios, cualquier irregularidad visible. Sé específico y técnico.' }
-          ]
-        }]
-      })
-    });
-    const visionData = await visionResp.json();
-    const descripcion = visionData.choices?.[0]?.message?.content || 'sonrisa con dientes visibles';
-
     const instrucciones = req.body.instrucciones || propuesta.notas || '';
-    const prompt = `Fotografía profesional de sonrisa perfecta resultado de tratamiento de ortodoncia con ${propuesta.tratamiento}. 
-Partiendo de: ${descripcion}. 
-Mejoras aplicadas: dientes perfectamente alineados, blancos, sin espacios, línea de sonrisa simétrica${instrucciones ? ', ' + instrucciones : ''}. 
-Foto de cara completa, iluminación de estudio dental, resultado realista post-tratamiento ortodóntico. Alta resolución.`;
 
-    const dalleResp = await fetch('https://api.openai.com/v1/images/generations', {
+    // Usar GPT-4o image edit para modificar la foto real del paciente
+    const prompt = `This is a real patient photo. Edit ONLY the teeth and smile area. Apply orthodontic treatment results: perfectly aligned teeth, correct crossbite fixed, closed spaces, symmetric smile line, white and clean teeth${instrucciones ? ', ' + instrucciones : ''}. Keep the patient's face, skin, lips and all other features EXACTLY the same. Only improve the teeth. Photorealistic dental result.`;
+
+    // Convertir base64 a buffer para FormData
+    const imgBuffer = Buffer.from(base64Data, 'base64');
+    const { Readable } = require('stream');
+
+    const FormData = require('form-data');
+    const fd = new FormData();
+    
+    // Agregar imagen como archivo PNG
+    fd.append('image', imgBuffer, { filename: 'patient.png', contentType: 'image/png' });
+    fd.append('prompt', prompt);
+    fd.append('model', 'gpt-image-1');
+    fd.append('n', '1');
+    fd.append('size', '1024x1024');
+
+    const editResp = await fetch('https://api.openai.com/v1/images/edits', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_KEY}` },
-      body: JSON.stringify({
-        model: 'dall-e-3',
-        prompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'hd',
-        response_format: 'b64_json'
-      })
+      headers: { 
+        'Authorization': `Bearer ${OPENAI_KEY}`,
+        ...fd.getHeaders()
+      },
+      body: fd
     });
-    const dalleData = await dalleResp.json();
-    if (dalleData.error) return res.status(500).json({ error: dalleData.error.message });
 
-    const simulacionB64 = `data:image/png;base64,${dalleData.data[0].b64_json}`;
+    const editData = await editResp.json();
+    if (editData.error) {
+      // Fallback a DALL-E 3 si gpt-image-1 no está disponible
+      const visionResp = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_KEY}` },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          max_tokens: 300,
+          messages: [{ role: 'user', content: [
+            { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Data}` } },
+            { type: 'text', text: 'Describe la persona: género, edad aproximada, color de piel, forma de cara, color de cabello. Luego describe los dientes: color, alineación, espacios, irregularidades.' }
+          ]}]
+        })
+      });
+      const visionData = await visionResp.json();
+      const descripcion = visionData.choices?.[0]?.message?.content || '';
+      const fallbackPrompt = `Professional dental photography, realistic portrait. ${descripcion}. After orthodontic treatment: perfectly aligned white teeth, fixed crossbite, symmetric smile, same person same face. Photorealistic.`;
+      const dalleResp = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_KEY}` },
+        body: JSON.stringify({ model: 'dall-e-3', prompt: fallbackPrompt, n: 1, size: '1024x1024', quality: 'hd', response_format: 'b64_json' })
+      });
+      const dalleData = await dalleResp.json();
+      if (dalleData.error) return res.status(500).json({ error: dalleData.error.message });
+      const simulacionB64 = `data:image/png;base64,${dalleData.data[0].b64_json}`;
+      propuestas[idx].simulacion = simulacionB64;
+      writePropuestas(propuestas);
+      return res.json({ ok: true, simulacion: simulacionB64 });
+    }
+
+    const simulacionB64 = `data:image/png;base64,${editData.data[0].b64_json}`;
     propuestas[idx].simulacion = simulacionB64;
     writePropuestas(propuestas);
 
