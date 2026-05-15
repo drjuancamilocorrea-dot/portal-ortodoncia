@@ -366,37 +366,17 @@ function renderPropuesta(p) {
         <p>Hemos preparado esta valoración personalizada basada en tu evaluación. Aquí encontrarás tu modelo 3D de dientes, el plan de tratamiento y todos los detalles de tu caso. Al aceptar, quedarás registrado en nuestro <strong style="color:var(--accent2)">Portal de Seguimiento</strong> donde podrás ver tu progreso, citas y pagos en tiempo real.</p>
       </div>
 
-      ${p.foto || p.simulacion ? `
+      ${p.foto ? `
       <div class="card">
         <div class="card-header">
-          <div class="icon">✨</div>
-          <h3>Simulación de tu Sonrisa</h3>
+          <div class="icon">📸</div>
+          <h3>Tu Sonrisa Actual</h3>
         </div>
         <div class="card-body">
-          ${p.simulacion ? `
-          <div class="sim-container">
-            <div class="sim-side">
-              <img src="${p.foto}" alt="Antes">
-              <div class="sim-label antes">Antes</div>
-            </div>
-            <div class="sim-side">
-              <img src="${p.simulacion}" alt="Después">
-              <div class="sim-label despues">Después estimado</div>
-            </div>
+          <div style="border-radius:12px;overflow:hidden;max-width:340px;margin:0 auto;">
+            <img src="${p.foto}" alt="Foto sonrisa" style="width:100%;display:block;">
           </div>
-          <p style="font-size:12px;color:var(--muted);margin-top:12px;text-align:center">* Simulación generada con IA. Los resultados reales pueden variar según cada caso clínico.</p>
-          ` : `
-          <div class="sim-container">
-            <div class="sim-side">
-              <img src="${p.foto}" alt="Foto actual">
-              <div class="sim-label antes">Tu sonrisa actual</div>
-            </div>
-            <div class="no-sim" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;background:#0d0d15;border-radius:12px;padding:30px;">
-              <span style="font-size:32px">🔄</span>
-              <span style="font-size:13px;color:var(--muted)">Simulación en preparación</span>
-            </div>
-          </div>
-          `}
+          <p style="font-size:12px;color:var(--muted);margin-top:12px;text-align:center;">Esta es tu sonrisa hoy — imagina cómo quedará al finalizar el tratamiento 🦷✨</p>
         </div>
       </div>
       ` : ''}

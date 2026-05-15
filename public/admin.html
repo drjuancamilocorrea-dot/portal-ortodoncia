@@ -397,7 +397,7 @@
     <!-- PROPUESTAS -->
     <div class="page" id="page-propuestas">
       <div class="page-hdr">
-        <div><h1>✨ Valoraciones</h1><p>Links personalizados para pacientes · Válidos 24 horas</p></div>
+        <div><h1>✨ Valoraciones</h1><p>Links personalizados para pacientes</p></div>
         <button class="btn btn-warn" id="btn-nueva-propuesta">+ Nueva valoración</button>
       </div>
       <div class="card">
@@ -417,7 +417,7 @@
             <div style="width:40px;height:40px;background:rgba(0,229,160,0.15);border:1px solid rgba(0,229,160,0.3);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">✨</div>
             <div>
               <div style="font-size:16px;font-weight:700;">Nueva Valoración</div>
-              <div style="font-size:12px;color:var(--text2);margin-top:2px;">Link único válido por 24 horas · Puedes agregar varios planes</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:2px;">Link personalizado para el paciente</div>
             </div>
             <button onclick="document.getElementById('modal-propuesta').style.display='none'" style="margin-left:auto;background:transparent;border:none;color:var(--text2);font-size:22px;cursor:pointer;">×</button>
           </div>
@@ -484,12 +484,12 @@
       <div style="max-width:480px;width:90%;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:32px;text-align:center;">
         <div style="font-size:56px;margin-bottom:12px;">🎉</div>
         <h3 style="font-size:20px;margin-bottom:8px;">¡Valoración creada!</h3>
-        <p style="font-size:13px;color:var(--text2);margin-bottom:20px;">Comparte este link. Expira en <strong style="color:var(--warn);">24 horas</strong>.</p>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:20px;">Comparte este link con el paciente.</p>
         <div style="background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.2);border-radius:10px;padding:12px 16px;margin-bottom:20px;word-break:break-all;font-size:13px;" id="link-generado"></div>
         <div style="display:flex;flex-direction:column;gap:10px;">
           <button onclick="copiarLink()" class="btn btn-warn" style="background:linear-gradient(135deg,#00e5a0,#00c47a);color:#000;border:none;">📋 Copiar link</button>
           <button onclick="enviarPorWsp()" class="btn" style="background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.3);color:#25d366;">💬 Enviar por WhatsApp</button>
-          <button onclick="simularSonrisa()" id="btn-simular" class="btn" style="background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.2);color:var(--warn);">✨ Generar simulación con IA</button>
+          
           <button onclick="cerrarModalLink()" class="btn" style="background:transparent;border:1px solid var(--border);color:var(--text2);">Cerrar</button>
         </div>
       </div>
