@@ -1139,15 +1139,27 @@ async function cargarVideo() {
             </div>
             ${disponible ? '<span style="margin-left:auto;background:rgba(0,210,140,0.1);color:var(--accent);border:1px solid rgba(0,210,140,0.3);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;">EN VIVO</span>' : ''}
           </div>
-          ${disponible
-            ? `<button onclick="entrarVideollamada('${cita.id}','${cita.sala_url}')" style="width:100%;background:linear-gradient(135deg,var(--accent),#059669);color:#fff;border:none;padding:14px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+          ${(() => {
+            if (disponible) {
+              return `<button onclick="entrarVideollamada('${cita.id}','${cita.sala_url}')" style="width:100%;background:linear-gradient(135deg,var(--accent),#059669);color:#fff;border:none;padding:14px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
                 Entrar a la consulta
-               </button>`
-            : `<div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;font-size:13px;color:var(--text2);">
-                La sala abre 30 minutos antes de tu cita
-               </div>`
-          }
+               </button>`;
+            }
+            const msRestantes = citaDate - ahora;
+            const dias = Math.floor(msRestantes / 86400000);
+            const horas = Math.floor((msRestantes % 86400000) / 3600000);
+            const mins = Math.floor((msRestantes % 3600000) / 60000);
+            const countdown = dias > 0 ? `${dias} día${dias>1?"s":""} y ${horas}h` : horas > 0 ? `${horas}h ${mins}min` : `${mins} minutos`;
+            return `<div style="background:rgba(0,210,140,0.06);border:1px solid rgba(0,210,140,0.15);border-radius:10px;padding:14px;text-align:center;">
+              <div style="font-size:22px;margin-bottom:6px;">⏳</div>
+              <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:4px;">Tu consulta es en ${countdown}</div>
+              <div style="font-size:12px;color:var(--text2);">La sala se abre automáticamente 30 min antes</div>
+              <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);font-size:11px;color:var(--text2);">
+                📅 ${fechaFmt} &nbsp;·&nbsp; ⏰ ${cita.hora} &nbsp;·&nbsp; Ten tu cámara y micrófono listos
+              </div>
+            </div>`;
+          })()}
         </div>`;
     }).join('');
   } catch(e) {
@@ -1178,19 +1190,14 @@ function entrarVideollamada(citaId, salaUrl) {
 function verificarCitasVirtuales(paciente) {
   const ahora = new Date();
   const citasVirtuales = (paciente?.citas || []).filter(c => c.virtual && c.sala_url && ['programada','proxima'].includes(c.estado));
-  
-  // Mostrar nav item si tiene citas virtuales
-  const hasUpcoming = citasVirtuales.some(c => {
-    const diff = (ahora - new Date(`${c.fecha}T${c.hora}:00`)) / 60000;
-    return diff >= -1440 && diff <= 90; // dentro de 24h antes o 90min después
-  });
 
+  // Siempre mostrar en menú si tiene al menos una cita virtual
   ['nav-video','nav-video2'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = citasVirtuales.length > 0 ? 'flex' : 'none';
   });
 
-  // Mostrar badge si hay cita próxima (30 min antes)
+  // Badge: EN VIVO si faltan ≤30 min, o badge con días si es futura
   const enVivo = citasVirtuales.some(c => {
     const diff = (ahora - new Date(`${c.fecha}T${c.hora}:00`)) / 60000;
     return diff >= -30 && diff <= 90;
@@ -1202,7 +1209,18 @@ function verificarCitasVirtuales(paciente) {
       if (el) {
         el.style.color = 'var(--accent)';
         el.style.fontWeight = '700';
-        el.innerHTML = el.innerHTML.replace('Videollamada', 'Videollamada 🔴');
+        if (!el.innerHTML.includes('🔴')) el.innerHTML = el.innerHTML.replace('Videollamada', 'Videollamada 🔴');
+      }
+    });
+  } else if (citasVirtuales.length > 0) {
+    // Mostrar badge con días restantes de la próxima cita
+    const proxima = citasVirtuales.sort((a,b) => new Date(`${a.fecha}T${a.hora}`) - new Date(`${b.fecha}T${b.hora}`))[0];
+    const diasRestantes = Math.ceil((new Date(`${proxima.fecha}T${proxima.hora}:00`) - ahora) / 86400000);
+    const badge = diasRestantes <= 1 ? '¡Mañana!' : `en ${diasRestantes}d`;
+    ['nav-video','nav-video2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.innerHTML.includes('badge-video')) {
+        el.innerHTML += ` <span id="badge-video" style="margin-left:auto;background:rgba(0,210,140,0.15);color:var(--accent);border-radius:20px;padding:2px 7px;font-size:10px;font-weight:700;">${badge}</span>`;
       }
     });
   }
