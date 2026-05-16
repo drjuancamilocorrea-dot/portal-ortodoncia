@@ -283,6 +283,7 @@
   <div style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:0 .5rem;margin:12px 0 6px;">Herramientas</div>
   <div class="nav-item" data-page="financiero" onclick="cerrarDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Mi cuenta</div>
   <div class="nav-item" data-page="asistente" onclick="cerrarDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Asistente IA</div>
+  <div class="nav-item" data-page="video" onclick="cerrarDrawer()" id="nav-video" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>Videollamada</div>
   <div class="nav-item" data-page="guia" onclick="cerrarDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Guía post-cita</div>
   <div class="nav-item" data-page="elasticos" onclick="cerrarDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>Mis elásticos</div>
   <div class="nav-item" data-page="gamificacion" onclick="cerrarDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Mis puntos</div>
@@ -318,6 +319,7 @@
       <div class="nav-sec">Herramientas</div>
       <div class="nav-item" data-page="financiero"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Mi cuenta</div>
       <div class="nav-item" data-page="asistente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Asistente IA</div>
+      <div class="nav-item" data-page="video" id="nav-video2" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>Videollamada</div>
       <div class="nav-item" data-page="guia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Guía post-cita</div>
       <div class="nav-item" data-page="elasticos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12h8M12 8v8"/></svg>Mis elásticos</div>
       <div class="nav-item" data-page="gamificacion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Mis puntos</div>
@@ -439,7 +441,21 @@
       </div>
 
       <!-- ASISTENTE -->
-      <div class="page" id="page-asistente">
+      <div class="page" id="page-video">
+        <div class="phdr"><h1>🎥 Videollamada</h1><p>Consulta virtual con el Dr. Correa</p></div>
+        <div id="video-content">
+          <div style="text-align:center;padding:40px 20px;color:var(--text2);">
+            <div style="font-size:48px;margin-bottom:12px;">🎥</div>
+            <p style="font-size:14px;">Cargando información de tu consulta virtual...</p>
+          </div>
+        </div>
+        <!-- Contenedor del iframe de Daily.co -->
+        <div id="video-frame-container" style="display:none;border-radius:16px;overflow:hidden;margin-top:16px;box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+          <iframe id="daily-iframe" allow="camera;microphone;display-capture;autoplay" style="width:100%;height:500px;border:none;display:block;"></iframe>
+        </div>
+      </div>
+
+            <div class="page" id="page-asistente">
         <div class="phdr"><h1>Asistente IA</h1><p>Resuelve tus dudas las 24 horas</p></div>
         <div class="card">
           <div class="chat-wrap">
@@ -652,7 +668,7 @@ checkMobile();
 
 const PAGE_TITLES = {
   inicio:'Resumen', citas:'Mis citas', progreso:'Mi progreso',
-  financiero:'Mi cuenta', asistente:'Asistente IA', guia:'Guía post-cita',
+  financiero:'Mi cuenta', asistente:'Asistente IA', guia:'Guía post-cita', video:'Videollamada',
   elasticos:'Mis elásticos', gamificacion:'Mis puntos', reviews:'Reseñas'
 };
 
@@ -1084,6 +1100,128 @@ if(TOKEN){
     .then(r=>r.ok?r.json():Promise.reject())
     .then(data=>{PAC=data;showApp();})
     .catch(()=>{localStorage.removeItem('ortho_token');TOKEN=null;});
+}
+
+// ─── MÓDULO VIDEOLLAMADA ────────────────────────────────────────────────────
+async function cargarVideo() {
+  const container = document.getElementById('video-content');
+  if (!container) return;
+
+  try {
+    // Buscar citas virtuales del paciente
+    const p = await apiGet('/api/paciente/perfil');
+    const ahora = new Date();
+    const citasVirtuales = (p.citas || []).filter(c => c.virtual && c.sala_url && ['programada','proxima'].includes(c.estado));
+
+    if (citasVirtuales.length === 0) {
+      container.innerHTML = `
+        <div style="text-align:center;padding:48px 20px;background:var(--card);border-radius:16px;border:1px solid var(--border);">
+          <div style="font-size:56px;margin-bottom:16px;">🎥</div>
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:8px;">No tienes videoconsultas programadas</h3>
+          <p style="font-size:14px;color:var(--text2);max-width:300px;margin:0 auto;line-height:1.6;">Cuando el Dr. Correa programe una consulta virtual, aparecerá aquí.</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = citasVirtuales.map(cita => {
+      const citaDate = new Date(`${cita.fecha}T${cita.hora}:00`);
+      const diffMin = (ahora - citaDate) / 60000;
+      const disponible = diffMin >= -30 && diffMin <= 90;
+      const fechaFmt = citaDate.toLocaleDateString('es-CO', {weekday:'long', day:'numeric', month:'long'});
+
+      return `
+        <div style="background:var(--card);border:2px solid ${disponible ? 'var(--accent)' : 'var(--border)'};border-radius:16px;padding:20px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="font-size:24px;">🎥</span>
+            <div>
+              <div style="font-size:15px;font-weight:700;">${cita.tipo}</div>
+              <div style="font-size:13px;color:var(--text2);">${fechaFmt} · ${cita.hora}</div>
+            </div>
+            ${disponible ? '<span style="margin-left:auto;background:rgba(0,210,140,0.1);color:var(--accent);border:1px solid rgba(0,210,140,0.3);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;">EN VIVO</span>' : ''}
+          </div>
+          ${disponible
+            ? `<button onclick="entrarVideollamada('${cita.id}','${cita.sala_url}')" style="width:100%;background:linear-gradient(135deg,var(--accent),#059669);color:#fff;border:none;padding:14px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                Entrar a la consulta
+               </button>`
+            : `<div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;font-size:13px;color:var(--text2);">
+                La sala abre 30 minutos antes de tu cita
+               </div>`
+          }
+        </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2);">Error cargando la videollamada</div>';
+  }
+}
+
+function entrarVideollamada(citaId, salaUrl) {
+  const frameContainer = document.getElementById('video-frame-container');
+  const iframe = document.getElementById('daily-iframe');
+  if (!frameContainer || !iframe) return;
+
+  iframe.src = salaUrl;
+  frameContainer.style.display = 'block';
+  frameContainer.scrollIntoView({ behavior: 'smooth' });
+
+  // Cambiar botón a "Salir"
+  const btn = event.target.closest('button');
+  if (btn) {
+    btn.textContent = '✅ Conectado — sala abierta abajo';
+    btn.style.background = '#1e293b';
+    btn.style.border = '1px solid var(--accent)';
+    btn.style.color = 'var(--accent)';
+    btn.disabled = true;
+  }
+}
+
+function verificarCitasVirtuales(paciente) {
+  const ahora = new Date();
+  const citasVirtuales = (paciente?.citas || []).filter(c => c.virtual && c.sala_url && ['programada','proxima'].includes(c.estado));
+  
+  // Mostrar nav item si tiene citas virtuales
+  const hasUpcoming = citasVirtuales.some(c => {
+    const diff = (ahora - new Date(`${c.fecha}T${c.hora}:00`)) / 60000;
+    return diff >= -1440 && diff <= 90; // dentro de 24h antes o 90min después
+  });
+
+  ['nav-video','nav-video2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = citasVirtuales.length > 0 ? 'flex' : 'none';
+  });
+
+  // Mostrar badge si hay cita próxima (30 min antes)
+  const enVivo = citasVirtuales.some(c => {
+    const diff = (ahora - new Date(`${c.fecha}T${c.hora}:00`)) / 60000;
+    return diff >= -30 && diff <= 90;
+  });
+
+  if (enVivo) {
+    ['nav-video','nav-video2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.color = 'var(--accent)';
+        el.style.fontWeight = '700';
+        el.innerHTML = el.innerHTML.replace('Videollamada', 'Videollamada 🔴');
+      }
+    });
+  }
+}
+
+// Override de showPage para cargar video cuando se navega a esa sección
+const _origShowPage = window.showPage;
+window.showPage = function(page) {
+  if (_origShowPage) _origShowPage(page);
+  if (page === 'video') cargarVideo();
+};
+
+// Si llega desde WhatsApp con #video en la URL, ir directo
+if (location.hash === '#video' || location.search.includes('video')) {
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      if (typeof showPage === 'function') showPage('video');
+    }, 500);
+  });
 }
 </script>
 </body>

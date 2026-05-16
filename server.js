@@ -202,20 +202,75 @@ app.delete('/api/admin/pacientes/:id/abono/:abId', adminAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+// ─── DAILY.CO helper ─────────────────────────────────────────────────────────
+async function crearSalaDaily(roomName) {
+  const DAILY_KEY = process.env.DAILY_API_KEY;
+  if (!DAILY_KEY) return null;
+  try {
+    const r = await fetch('https://api.daily.co/v1/rooms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DAILY_KEY}` },
+      body: JSON.stringify({
+        name: roomName,
+        properties: {
+          enable_chat: true,
+          enable_screenshare: false,
+          start_video_off: false,
+          start_audio_off: false,
+          exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 // expira en 24h
+        }
+      })
+    });
+    const d = await r.json();
+    return d.url || null;
+  } catch(e) {
+    console.error('Daily.co error:', e.message);
+    return null;
+  }
+}
+
 // ADMIN: citas
-app.post('/api/admin/pacientes/:id/citas', adminAuth, (req, res) => {
-  const { fecha, hora, tipo } = req.body;
+app.post('/api/admin/pacientes/:id/citas', adminAuth, async (req, res) => {
+  const { fecha, hora, tipo, virtual } = req.body;
   if (!fecha || !hora || !tipo) return res.status(400).json({ error: 'Faltan datos' });
   const db = readDB();
   const idx = db.pacientes.findIndex(p => p.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'No encontrado' });
-  db.pacientes[idx].citas.push({ id: 'c' + Date.now(), fecha, hora, tipo, estado: 'programada' });
+
+  const citaId = 'c' + Date.now();
+  const nuevaCita = { id: citaId, fecha, hora, tipo, estado: 'programada', virtual: !!virtual };
+
+  // Si es virtual, crear sala en Daily.co
+  if (virtual) {
+    const roomName = `consulta-${req.params.id}-${citaId}`;
+    const salaUrl = await crearSalaDaily(roomName);
+    if (salaUrl) {
+      nuevaCita.sala_url = salaUrl;
+      nuevaCita.room_name = roomName;
+    }
+  }
+
+  db.pacientes[idx].citas.push(nuevaCita);
   writeDB(db);
 
-  // Email de confirmación de cita
   const p = db.pacientes[idx];
+  const fechaFmt = new Date(fecha).toLocaleDateString('es-CO', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const portalUrl = process.env.BASE_URL || 'https://portal-ortodoncia-production.up.railway.app';
+
+  // WhatsApp al paciente
+  if (p.telefono) {
+    let msgWsp;
+    if (virtual && nuevaCita.sala_url) {
+      msgWsp = `📅 *Videoconsulta programada*\n\n🦷 *${tipo}*\n📆 ${fechaFmt}\n⏰ ${hora}\n\n🎥 Es una consulta virtual. El día y hora de tu cita, entra a tu portal y ve a la sección *Videollamada*:\n\n👉 ${portalUrl}\n\n¡Te esperamos! — Dr. Juan Camilo Correa`;
+    } else {
+      msgWsp = `📅 *Cita programada*\n\n🦷 *${tipo}*\n📆 ${fechaFmt}\n⏰ ${hora}\n\nRecuerda llegar 5 minutos antes. ¡Te esperamos! 😊\n\n— Dr. Juan Camilo Correa`;
+    }
+    await enviarWhatsApp(p.telefono, msgWsp);
+  }
+
+  // Email de confirmación
   if (p.email) {
-    const fechaFmt = new Date(fecha).toLocaleDateString('es-CO', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    const virtualBadge = virtual ? `<div style="background:#0d2818;border:1px solid #00d28c;border-radius:6px;padding:10px;margin:12px 0;color:#00d28c;font-size:13px;">🎥 Esta es una cita virtual. Ingresa a tu portal el día de la cita para unirte.</div>` : '';
     const html = emailTemplate('Cita programada 📅', `
       <p style="color:#9ca3af;font-size:14px;margin:0 0 16px;">Hola <strong style="color:#f0f6fc;">${p.nombre.split(' ')[0]}</strong>, tu cita ha sido programada.</p>
       <div style="background:#0d1117;border-radius:8px;padding:16px;margin:16px 0;">
@@ -223,11 +278,12 @@ app.post('/api/admin/pacientes/:id/citas', adminAuth, (req, res) => {
         <div style="margin-bottom:10px;"><span style="color:#6b7280;font-size:12px;">FECHA</span><br><span style="color:#f0f6fc;font-size:14px;">${fechaFmt}</span></div>
         <div><span style="color:#6b7280;font-size:12px;">HORA</span><br><span style="color:#00d28c;font-size:16px;font-weight:700;">${hora}</span></div>
       </div>
+      ${virtualBadge}
       <p style="color:#9ca3af;font-size:13px;">Por favor llega 5 minutos antes. Si necesitas cancelar, contáctanos con anticipación.</p>`);
     enviarEmail(p.email, `📅 Cita programada — ${tipo}`, html);
   }
 
-  res.json({ ok: true });
+  res.json({ ok: true, virtual: !!virtual, sala_url: nuevaCita.sala_url || null });
 });
 
 app.put('/api/admin/pacientes/:id/citas/:cid', adminAuth, (req, res) => {
@@ -646,6 +702,41 @@ ${agendaInfo}
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// ─── VIDEO: obtener acceso a sala ────────────────────────────────────────────
+app.get('/api/video/:citaId', auth, async (req, res) => {
+  const db = readDB();
+  const paciente = db.pacientes.find(p => p.id === req.user.id);
+  if (!paciente) return res.status(404).json({ error: 'Paciente no encontrado' });
+
+  const cita = paciente.citas.find(c => c.id === req.params.citaId);
+  if (!cita) return res.status(404).json({ error: 'Cita no encontrada' });
+  if (!cita.virtual || !cita.sala_url) return res.status(400).json({ error: 'Esta cita no es virtual' });
+
+  // Verificar que la cita es hoy ±30 minutos
+  const ahora = new Date();
+  const citaDateTime = new Date(`${cita.fecha}T${cita.hora}:00`);
+  const diffMin = (ahora - citaDateTime) / 60000;
+  if (diffMin < -30 || diffMin > 90) {
+    return res.status(403).json({ 
+      error: 'La sala solo está disponible 30 minutos antes y hasta 90 minutos después de la cita',
+      fecha: cita.fecha,
+      hora: cita.hora
+    });
+  }
+
+  res.json({ sala_url: cita.sala_url, nombre: paciente.nombre, cita });
+});
+
+// ─── VIDEO ADMIN: acceso directo a sala ──────────────────────────────────────
+app.get('/api/admin/video/:pacienteId/:citaId', adminAuth, async (req, res) => {
+  const db = readDB();
+  const paciente = db.pacientes.find(p => p.id === req.params.pacienteId);
+  if (!paciente) return res.status(404).json({ error: 'Paciente no encontrado' });
+  const cita = paciente.citas.find(c => c.id === req.params.citaId);
+  if (!cita || !cita.sala_url) return res.status(404).json({ error: 'Sala no encontrada' });
+  res.json({ sala_url: cita.sala_url, nombre: paciente.nombre, cita });
 });
 
 // GUIA POST-CITA

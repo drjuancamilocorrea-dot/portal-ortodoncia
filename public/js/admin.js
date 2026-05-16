@@ -923,25 +923,46 @@ G('btn-nueva-cita-direct').addEventListener('click', () => {
   G('mc-hora').value='09:00';
   om('modal-cita');
 });
+function updateVirtualToggle() {
+  const v = document.getElementById('mc-virtual')?.checked;
+  const track = document.getElementById('mc-vtrack');
+  const thumb = document.getElementById('mc-vthumb');
+  if(track) track.style.background = v ? 'var(--accent)' : '#1e293b';
+  if(thumb) thumb.style.transform = v ? 'translateX(20px)' : 'translateX(0)';
+}
+
 G('btn-save-cita').addEventListener('click',async()=>{
   const pid = G('mc-pid').value || G('mc-paciente-select').value;
   if(!pid){ alert('Selecciona un paciente'); return; }
   const fecha=G('mc-fecha').value, hora=G('mc-hora').value, tipo=G('mc-tipo').value;
   const duracion=parseInt(G('mc-duracion').value)||30;
+  const virtual = document.getElementById('mc-virtual')?.checked || false;
   if(!fecha||!hora) { alert('Completa fecha y hora'); return; }
-  const d=await apiPost(`/api/admin/pacientes/${pid}/citas`,{fecha,hora,tipo,duracion});
+
+  const btn = G('btn-save-cita');
+  btn.disabled = true;
+  btn.innerHTML = virtual ? '⏳ Creando sala...' : '⏳ Agendando...';
+
+  const d=await apiPost(`/api/admin/pacientes/${pid}/citas`,{fecha,hora,tipo,duracion,virtual});
+  btn.disabled = false;
+  btn.textContent = 'Agendar';
+
   if(d.ok){
     PACS=await apiGet('/api/admin/pacientes');
-    cm('modal-cita'); renderPacs(); renderCalendario();
-    const p=PACS.find(x=>x.id===pid);
-    if(p?.telefono) {
-      await apiPost('/api/admin/whatsapp/confirmacion-cita',{paciente_id:pid,fecha,hora,tipo});
-      const notif=document.createElement('div');
-      notif.style.cssText='position:fixed;bottom:1.5rem;right:1.5rem;background:#111820;border:1px solid rgba(0,210,140,0.3);border-radius:10px;padding:12px 18px;font-size:13px;color:#00d28c;z-index:999;';
-      notif.innerHTML='✅ Cita agendada · 📅 Confirmación enviada por WhatsApp';
-      document.body.appendChild(notif);
-      setTimeout(()=>notif.remove(),4000);
+    cm('modal-cita');
+    // Resetear toggle
+    const vcb = document.getElementById('mc-virtual');
+    if(vcb) { vcb.checked = false; updateVirtualToggle(); }
+    renderPacs(); renderCalendario();
+    const notif=document.createElement('div');
+    notif.style.cssText='position:fixed;bottom:1.5rem;right:1.5rem;background:#0d1a0d;border:1px solid rgba(0,210,140,0.4);border-radius:12px;padding:14px 18px;font-size:13px;color:#00d28c;z-index:999;max-width:320px;';
+    if(virtual && d.sala_url) {
+      notif.innerHTML='✅ Cita virtual agendada · 🎥 Sala creada · 📱 WhatsApp enviado al paciente';
+    } else {
+      notif.innerHTML='✅ Cita agendada · 📱 WhatsApp enviado al paciente';
     }
+    document.body.appendChild(notif);
+    setTimeout(()=>notif.remove(),5000);
   }
 });
 

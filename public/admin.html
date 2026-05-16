@@ -635,6 +635,18 @@
         </select>
       </div>
     </div>
+    <!-- Toggle cita virtual -->
+    <div id="mc-virtual-box" style="display:flex;align-items:center;gap:12px;background:rgba(0,210,140,0.06);border:1px solid rgba(0,210,140,0.15);border-radius:10px;padding:12px 14px;margin-top:8px;cursor:pointer;" onclick="document.getElementById('mc-virtual').click()">
+      <div style="position:relative;width:44px;height:24px;flex-shrink:0;">
+        <input type="checkbox" id="mc-virtual" style="position:absolute;opacity:0;width:0;height:0;" onchange="updateVirtualToggle()">
+        <div id="mc-vtrack" style="position:absolute;inset:0;background:#1e293b;border-radius:24px;transition:0.3s;border:1px solid rgba(255,255,255,0.1);"></div>
+        <div id="mc-vthumb" style="position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:0.3s;"></div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;">🎥 Cita virtual</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:1px;">Se crea sala de videollamada y se notifica al paciente por WhatsApp</div>
+      </div>
+    </div>
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:1rem;">
       <button class="btn" onclick="cm('modal-cita')">Cancelar</button>
       <button class="btn btn-acc" id="btn-save-cita">Agendar</button>
