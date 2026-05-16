@@ -6,24 +6,25 @@
 <title>Tu Propuesta de Tratamiento · Dr. Juan Camilo Correa</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
-    /* ── Paleta marca Dr. Correa ── */
+    /* ── Paleta coherente con landing drjuancamilocorrea.com ── */
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
   :root {
-    --bg: #f8fafc;
-    --bg2: #ffffff;
-    --card: #ffffff;
-    --border: #e2e8f0;
-    --border2: #cbd5e1;
+    --bg: #0f172a;
+    --bg2: #1e293b;
+    --card: #1e293b;
+    --card2: #253347;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(16,185,129,0.25);
     --accent: #10b981;
     --accent-dark: #059669;
-    --accent-light: #d1fae5;
+    --accent-light: rgba(16,185,129,0.12);
     --navy: #0f172a;
     --navy2: #1e293b;
-    --text: #1e293b;
-    --text2: #475569;
-    --muted: #94a3b8;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
-    --shadow-lg: 0 4px 24px rgba(0,0,0,0.10);
+    --text: #f1f5f9;
+    --text2: #94a3b8;
+    --muted: #64748b;
+    --shadow: 0 4px 20px rgba(0,0,0,0.25);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.35);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -110,7 +111,7 @@
     width: 34px; height: 34px; border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
     font-size: 17px;
-    background: var(--accent-light);
+    background: rgba(16,185,129,0.15);
   }
   .card-header h3 { font-size: 14px; font-weight: 700; color: var(--navy); }
   .card-body { padding: 20px; }
@@ -126,7 +127,7 @@
   #visor3d canvas { display: block; }
   .visor-controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .visor-btn {
-    background: #fff;
+    background: rgba(255,255,255,0.06);
     border: 1px solid var(--border);
     color: var(--text2);
     padding: 6px 14px;
@@ -135,41 +136,40 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: var(--shadow);
   }
-  .visor-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent-dark); }
+  .visor-btn:hover { background: rgba(16,185,129,0.12); border-color: var(--accent); color: var(--accent); }
   .visor-tip { font-size: 12px; color: var(--muted); margin-top: 8px; text-align: center; }
   .no-stl {
     height: 300px; display: flex; align-items: center; justify-content: center;
     flex-direction: column; gap: 8px; color: var(--muted); font-size: 14px;
-    background: #f1f5f9; border-radius: 12px;
+    background: rgba(255,255,255,0.04); border-radius: 12px;
   }
 
   /* TRATAMIENTO */
   .trat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .trat-item {
-    background: #f8fafc;
+    background: rgba(255,255,255,0.04);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 14px;
   }
   .trat-item .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; font-weight: 600; }
-  .trat-item .value { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .trat-item .value { font-size: 15px; font-weight: 700; color: var(--text); }
   .trat-item .value.accent { color: var(--accent-dark); }
   .trat-item .value.green { color: var(--accent-dark); }
 
   /* NOTAS */
   .notas-box {
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.2);
     border-radius: 10px;
     padding: 14px 16px;
     font-size: 14px;
     line-height: 1.65;
-    color: #166534;
+    color: var(--text2);
     margin-top: 14px;
   }
-  .notas-box strong { color: var(--accent-dark); }
+  .notas-box strong { color: var(--accent); }
 
   /* PLANES */
   .plan-card {
@@ -179,15 +179,15 @@
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
-    background: #fff;
+    background: var(--card2);
   }
-  .plan-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(16,185,129,0.12); }
-  .plan-card.selected { border-color: var(--accent); box-shadow: 0 4px 20px rgba(16,185,129,0.15); background: #f0fdf4; }
+  .plan-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(16,185,129,0.15); }
+  .plan-card.selected { border-color: var(--accent); box-shadow: 0 4px 20px rgba(16,185,129,0.2); background: rgba(16,185,129,0.08); }
   .plan-card.selected::after {
     content: '✓';
     position: absolute; top: 12px; right: 14px;
     width: 26px; height: 26px;
-    background: var(--accent); color: #fff;
+    background: var(--accent); color: #0f172a;
     border-radius: 50%; font-weight: 800; font-size: 13px;
     display: flex; align-items: center; justify-content: center;
   }
@@ -262,15 +262,15 @@
   }
   .modal-overlay.show { display: flex; }
   .modal {
-    background: #fff;
-    border: 1px solid var(--border);
+    background: var(--card2);
+    border: 1px solid var(--border2);
     border-radius: 20px;
     padding: 32px 24px;
     max-width: 360px; width: 90%;
     text-align: center;
     box-shadow: var(--shadow-lg);
   }
-  .modal h3 { font-size: 20px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+  .modal h3 { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
   .modal p { color: var(--text2); font-size: 14px; margin-bottom: 24px; line-height: 1.6; }
   .modal-btns { display: flex; flex-direction: column; gap: 10px; }
   .btn-confirmar {
@@ -280,7 +280,7 @@
   }
   .btn-cancelar {
     background: transparent; color: var(--text2);
-    border: 1px solid var(--border); padding: 12px;
+    border: 1px solid rgba(255,255,255,0.1); padding: 12px;
     border-radius: 10px; font-size: 14px; cursor: pointer;
   }
 
@@ -290,7 +290,7 @@
     min-height: 80vh; text-align: center; padding: 40px;
   }
   .expired-screen .icon { font-size: 64px; margin-bottom: 16px; }
-  .expired-screen h2 { font-size: 22px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+  .expired-screen h2 { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
   .expired-screen p { color: var(--text2); max-width: 300px; line-height: 1.6; }
 
   /* SUCCESS */
@@ -300,7 +300,7 @@
   }
   .success-screen.show { display: flex; }
   .success-screen .check { font-size: 72px; margin-bottom: 16px; }
-  .success-screen h2 { font-size: 24px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+  .success-screen h2 { font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
   .success-screen p { color: var(--text2); max-width: 300px; line-height: 1.6; margin-bottom: 20px; }
 
   .loading-screen {
