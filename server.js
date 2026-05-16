@@ -491,13 +491,158 @@ app.post('/api/chat', auth, async (req, res) => {
   if (!apiKey || apiKey.includes('aqui-pega')) return res.status(400).json({ error: 'API key no configurada' });
   const { mensaje, historial, tratamiento } = req.body;
   const client = new Anthropic({ apiKey });
+
+  // Obtener datos reales de la agenda del paciente y citas disponibles
+  const db = readDB();
+  const paciente = db.pacientes.find(p => p.id === req.user.id);
+  const hoy = new Date();
+
+  // Calcular próximos 14 días disponibles (lunes a sábado, excluyendo citas ya ocupadas)
+  const citasOcupadas = [];
+  db.pacientes.forEach(p => {
+    (p.citas || []).forEach(c => {
+      if (c.estado === 'programada' && new Date(c.fecha) >= hoy) {
+        citasOcupadas.push({ fecha: c.fecha, hora: c.hora });
+      }
+    });
+  });
+
+  // Horarios disponibles del consultorio
+  const horarioConsultorio = {
+    1: ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00'], // Lunes
+    2: ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00'], // Martes
+    3: ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00'], // Miércoles
+    4: ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00'], // Jueves
+    5: ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00'], // Viernes
+    6: ['08:00','08:30','09:00','09:30','10:00','10:30','11:00'] // Sábado
+  };
+
+  const diasDisponibles = [];
+  for (let d = 1; d <= 14; d++) {
+    const fecha = new Date(hoy);
+    fecha.setDate(hoy.getDate() + d);
+    const diaSemana = fecha.getDay(); // 0=dom, 1=lun...
+    if (diaSemana === 0) continue; // sin domingos
+    const fechaStr = fecha.toISOString().split('T')[0];
+    const horasOcupadas = citasOcupadas.filter(c => c.fecha === fechaStr).map(c => c.hora);
+    const horasLibres = (horarioConsultorio[diaSemana] || []).filter(h => !horasOcupadas.includes(h));
+    if (horasLibres.length > 0) {
+      const nombreDia = fecha.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+      diasDisponibles.push({ fecha: fechaStr, nombre: nombreDia, horas: horasLibres.slice(0, 4) });
+    }
+  }
+
+  const agendaInfo = diasDisponibles.slice(0, 5).map(d =>
+    `${d.nombre}: ${d.horas.join(', ')}`
+  ).join('\n');
+
+  const proximasCitasPaciente = (paciente?.citas || [])
+    .filter(c => new Date(c.fecha) >= hoy && c.estado === 'programada')
+    .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
+    .slice(0, 3)
+    .map(c => `${c.fecha} a las ${c.hora} — ${c.tipo}`)
+    .join('\n') || 'No tiene citas programadas';
+
+  const tipoCita = paciente?.tratamiento?.toLowerCase().includes('alineador') ? 'alineadores' : 'brackets';
+
+  // Construir contexto completo del paciente
+  const totalPagado = (paciente?.presupuesto?.abonos || []).reduce((s, a) => s + (a.monto || 0), 0);
+  const saldoPendiente = (paciente?.presupuesto?.total || 0) - totalPagado;
+  const citasRealizadas = (paciente?.citas || []).filter(c => c.estado === 'realizada');
+  const citasPendientes = (paciente?.citas || []).filter(c => ['programada','proxima'].includes(c.estado) && new Date(c.fecha) >= hoy).sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
+  const ultimaCita = citasRealizadas.sort((a,b) => new Date(b.fecha) - new Date(a.fecha))[0];
+  const elasticoActual = paciente?.elastico_activo || ultimaCita?.elastico || null;
+  const puntosGamif = (paciente?.gamificacion?.historial || []).reduce((s,e) => s + (e.puntos||0), 0);
+  const mesesActivo = paciente?.inicio ? Math.floor((hoy - new Date(paciente.inicio)) / (1000*60*60*24*30)) : 0;
+  const progreso = paciente?.duracion ? Math.round((mesesActivo / paciente.duracion) * 100) : 0;
+
+  const abonos = (paciente?.presupuesto?.abonos || []).slice(-4).map(a =>
+    `${a.fecha}: $${a.monto.toLocaleString('es-CO')} (${a.descripcion})`
+  ).join('\n') || 'Sin abonos';
+
+  const historialCitas = citasRealizadas.slice(-5).sort((a,b) => new Date(b.fecha) - new Date(a.fecha)).map(c =>
+    `${c.fecha} ${c.hora} - ${c.tipo}${c.notas_clinicas ? ': ' + c.notas_clinicas : ''}${c.elastico ? ' | Elástico: ' + c.elastico : ''}`
+  ).join('\n') || 'Sin citas realizadas';
+
+  const progresoCitas = (paciente?.progreso || []).map(p =>
+    `Mes ${p.mes} (${p.fecha}): ${p.nota}`
+  ).join('\n') || 'Sin registros de progreso';
+
+  const systemPrompt = `Eres el asistente virtual del consultorio del Dr. Juan Camilo Correa, ortodoncista. Tienes acceso completo al perfil clínico y financiero del paciente. Usa esta información para dar respuestas personalizadas y contextualizadas.
+
+═══ PERFIL DEL PACIENTE ═══
+Nombre: ${paciente?.nombre || 'Paciente'}
+Teléfono: ${paciente?.telefono || 'No registrado'}
+Tratamiento: ${paciente?.tratamiento || tratamiento}
+Inicio: ${paciente?.inicio || 'No registrado'}
+Duración estimada: ${paciente?.duracion || '?'} meses
+Meses activo: ${mesesActivo} meses
+Progreso: ${progreso}%
+Puntos acumulados: ${puntosGamif} pts
+
+═══ ESTADO FINANCIERO ═══
+Presupuesto total: $${(paciente?.presupuesto?.total || 0).toLocaleString('es-CO')}
+Total pagado: $${totalPagado.toLocaleString('es-CO')}
+Saldo pendiente: $${saldoPendiente.toLocaleString('es-CO')}
+Cuota mensual: $${(paciente?.presupuesto?.valor_cuota || 0).toLocaleString('es-CO')}
+Últimos abonos:
+${abonos}
+
+═══ ELÁSTICOS ═══
+Elástico actual: ${elasticoActual || 'No tiene elásticos asignados'}
+
+═══ HISTORIAL DE CITAS (últimas 5) ═══
+${historialCitas}
+
+═══ PRÓXIMAS CITAS ═══
+${proximasCitasPaciente}
+
+═══ PROGRESO CLÍNICO ═══
+${progresoCitas}
+
+═══ AGENDA DISPONIBLE ═══
+${agendaInfo}
+
+═══ INSTRUCCIONES ═══
+1. Responde con contexto del paciente — si pregunta por su saldo, díselo; si pregunta por su próxima cita, dísela; si pregunta por sus elásticos, explícale cómo usarlos
+2. Para dudas clínicas (dolor, alimentación, higiene, emergencias) responde con base en su tratamiento específico
+3. Si quiere agendar, muestra los horarios disponibles y cuando confirme día y hora exactos, incluye al final:
+   [AGENDAR: fecha=YYYY-MM-DD hora=HH:MM tipo=Control de ${tipoCita}]
+4. Sé cálido, empático y usa emojis con moderación
+5. Responde siempre en español
+6. Nunca inventes información — si no está en el contexto, dilo honestamente`;
+
   try {
     const resp = await client.messages.create({
-      model: 'claude-opus-4-5', max_tokens: 600,
-      system: 'Eres el asistente virtual de una consulta de ortodoncia. Tratamiento del paciente: ' + (tratamiento || 'ortodoncia') + '. Responde dudas sobre cuidados, alimentacion, dolor, higiene, emergencias. Amable y conciso. En espanol.',
+      model: 'claude-opus-4-5', max_tokens: 800,
+      system: systemPrompt,
       messages: [...(historial || []), { role: 'user', content: mensaje }]
     });
-    res.json({ respuesta: resp.content[0]?.text || '' });
+    const respuesta = resp.content[0]?.text || '';
+
+    // Detectar si el asistente quiere agendar una cita
+    const match = respuesta.match(/\[AGENDAR: fecha=(\S+) hora=(\S+) tipo=(.+?)\]/);
+    if (match && paciente) {
+      const [, fecha, hora, tipo] = match;
+      const dbFresh = readDB();
+      const pIdx = dbFresh.pacientes.findIndex(p => p.id === req.user.id);
+      if (pIdx !== -1) {
+        const nuevaCita = { id: 'c' + Date.now(), fecha, hora, tipo: tipo.trim(), estado: 'programada' };
+        dbFresh.pacientes[pIdx].citas.push(nuevaCita);
+        writeDB(dbFresh);
+
+        // Notificar al admin por WhatsApp
+        const adminTel = process.env.ADMIN_WHATSAPP || '';
+        if (adminTel) {
+          const msgAdmin = `📅 *Nueva cita solicitada por el portal*\n\n👤 ${paciente.nombre}\n🗓 ${fecha} a las ${hora}\n🦷 ${tipo.trim()}\n\n¡Revisa el panel admin!`;
+          await enviarWhatsApp(adminTel, msgAdmin);
+        }
+      }
+      // Limpiar el tag del mensaje antes de enviarlo
+      return res.json({ respuesta: respuesta.replace(/\[AGENDAR:[^\]]+\]/, '').trim(), cita_agendada: true });
+    }
+
+    res.json({ respuesta });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
