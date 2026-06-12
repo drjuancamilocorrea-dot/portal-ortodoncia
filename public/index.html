@@ -357,21 +357,48 @@
 
         <!-- Contador alineador -->
         <div id="contador-alin" style="display:none;background:rgba(79,163,255,0.08);border:1px solid rgba(79,163,255,0.25);border-radius:var(--r);padding:1.25rem;margin-bottom:1rem;">
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-            <div>
-              <p style="font-size:12px;color:var(--info);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Cambio de alineador</p>
-              <p style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);" id="dias-cambio">— días</p>
-              <p style="font-size:13px;color:var(--text2);" id="fecha-cambio"></p>
-            </div>
-            <div style="text-align:right;">
-              <div style="width:60px;height:60px;border-radius:50%;border:3px solid var(--info);display:flex;align-items:center;justify-content:center;flex-direction:column;">
-                <span style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--info);" id="dias-num">—</span>
-                <span style="font-size:10px;color:var(--text2);">días</span>
+          <!-- Display único (frecuencias iguales) -->
+          <div id="alin-simple">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+              <div>
+                <p style="font-size:12px;color:var(--info);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Cambio de alineador</p>
+                <p style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);" id="dias-cambio">— días</p>
+                <p style="font-size:13px;color:var(--text2);" id="fecha-cambio"></p>
+              </div>
+              <div style="text-align:right;">
+                <div style="width:60px;height:60px;border-radius:50%;border:3px solid var(--info);display:flex;align-items:center;justify-content:center;flex-direction:column;">
+                  <span style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--info);" id="dias-num">—</span>
+                  <span style="font-size:10px;color:var(--text2);">días</span>
+                </div>
               </div>
             </div>
+            <div style="margin-top:10px;background:var(--bg3);border-radius:99px;height:6px;overflow:hidden;">
+              <div id="alin-bar" style="height:100%;background:linear-gradient(90deg,var(--info),#00d2ff);border-radius:99px;transition:width 1s;"></div>
+            </div>
           </div>
-          <div style="margin-top:10px;background:var(--bg3);border-radius:99px;height:6px;overflow:hidden;">
-            <div id="alin-bar" style="height:100%;background:linear-gradient(90deg,var(--info),#00d2ff);border-radius:99px;transition:width 1s;"></div>
+          <!-- Display doble (frecuencias distintas) -->
+          <div id="alin-doble" style="display:none;">
+            <p style="font-size:12px;color:var(--info);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Cambio de alineador</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <!-- Superior -->
+              <div style="background:rgba(79,163,255,0.08);border:1px solid rgba(79,163,255,0.2);border-radius:10px;padding:12px;">
+                <p style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">⬆ Superior</p>
+                <p style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);" id="dias-cambio-sup">—</p>
+                <p style="font-size:12px;color:var(--text2);margin-top:2px;" id="fecha-cambio-sup"></p>
+                <div style="margin-top:8px;background:var(--bg3);border-radius:99px;height:5px;overflow:hidden;">
+                  <div id="alin-bar-sup" style="height:100%;background:linear-gradient(90deg,var(--info),#00d2ff);border-radius:99px;transition:width 1s;"></div>
+                </div>
+              </div>
+              <!-- Inferior -->
+              <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:12px;">
+                <p style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">⬇ Inferior</p>
+                <p style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);" id="dias-cambio-inf">—</p>
+                <p style="font-size:12px;color:var(--text2);margin-top:2px;" id="fecha-cambio-inf"></p>
+                <div style="margin-top:8px;background:var(--bg3);border-radius:99px;height:5px;overflow:hidden;">
+                  <div id="alin-bar-inf" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width 1s;"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -771,24 +798,61 @@ async function loadInicio() {
   G('s-pct').textContent = pct+'%';
   setTimeout(()=>{G('s-bar').style.width=pct+'%';},200);
 
-  // Contador alineador
-  if(PAC.cambio_alineador_dias) {
-    const dias=PAC.cambio_alineador_dias;
-    const diasDesdeInicio=Math.floor((hoy-inicio)/(1000*60*60*24));
-    const diasEnCiclo=diasDesdeInicio%dias;
-    const diasRestantes=dias-diasEnCiclo;
-    const pctCiclo=Math.round((diasEnCiclo/dias)*100);
-    const fechaCambio=new Date(hoy); fechaCambio.setDate(hoy.getDate()+diasRestantes);
-    const numAlineadorActual = PAC.num_alineador_actual || Math.floor(diasDesdeInicio/dias)+1;
+  // Contador alineador — soporta frecuencias distintas por arcada
+  const tieneSuperior = PAC.cambio_dias_superior;
+  const tieneInferior = PAC.cambio_dias_inferior;
+  const tieneAlineador = tieneSuperior || tieneInferior || PAC.cambio_alineador_dias;
+  if(tieneAlineador) {
+    const inicioAlineadorStr = PAC.inicio_alineador || fechaInicioStr;
+    const inicioAlin = new Date(inicioAlineadorStr + 'T12:00:00');
+    const diasDesdeInicio = Math.floor((hoy - inicioAlin) / (1000*60*60*24));
+
+    const diasSup = parseInt(tieneSuperior) || parseInt(PAC.cambio_alineador_dias) || null;
+    const diasInf = parseInt(tieneInferior) || parseInt(PAC.cambio_alineador_dias) || null;
+    const mismaFrecuencia = diasSup === diasInf;
+    const numAlineadorActual = PAC.num_alineador_actual || (diasSup ? Math.floor(diasDesdeInicio / diasSup) + 1 : '?');
     const totalAlineadores = PAC.total_alineadores || '?';
-    G('dias-cambio').textContent=diasRestantes===0?'¡Hoy es tu día de cambio!':diasRestantes===1?'Mañana es tu cambio':'Faltan '+diasRestantes+' días';
-    G('dias-num').textContent=diasRestantes;
-    G('fecha-cambio').textContent='Alineador '+numAlineadorActual+' de '+totalAlineadores+' · Próximo cambio: '+fechaCambio.toLocaleDateString('es-CO',{day:'numeric',month:'long'});
-    G('alin-bar').style.width=pctCiclo+'%';
-    G('contador-alin').style.display='block';
-    if(diasRestantes===0) {
-      G('dias-cambio').style.color='#ff4f6b';
-      G('dias-num').style.color='#ff4f6b';
+
+    const calcCiclo = (dias) => {
+      const enCiclo = diasDesdeInicio % dias;
+      const restantes = dias - enCiclo;
+      const pct = Math.round((enCiclo / dias) * 100);
+      const fecha = new Date(hoy); fecha.setDate(hoy.getDate() + restantes);
+      return { restantes, pct, fecha };
+    };
+    const fmtFecha = (d) => d.toLocaleDateString('es-CO', {day:'numeric', month:'long'});
+    const fmtDias = (n) => n === 0 ? '¡Hoy es tu cambio!' : n === 1 ? 'Mañana es tu cambio' : 'Faltan ' + n + ' días';
+
+    G('contador-alin').style.display = 'block';
+
+    if(mismaFrecuencia && diasSup) {
+      // Display simple — igual que antes
+      const { restantes, pct, fecha } = calcCiclo(diasSup);
+      G('alin-simple').style.display = 'block';
+      G('alin-doble').style.display = 'none';
+      G('dias-cambio').textContent = fmtDias(restantes);
+      G('dias-num').textContent = restantes;
+      G('fecha-cambio').textContent = 'Alineador ' + numAlineadorActual + ' de ' + totalAlineadores + ' · Próximo cambio: ' + fmtFecha(fecha);
+      G('alin-bar').style.width = pct + '%';
+      if(restantes === 0) { G('dias-cambio').style.color='#ff4f6b'; G('dias-num').style.color='#ff4f6b'; }
+    } else {
+      // Display doble — una card por arcada
+      G('alin-simple').style.display = 'none';
+      G('alin-doble').style.display = 'block';
+      if(diasSup) {
+        const s = calcCiclo(diasSup);
+        G('dias-cambio-sup').textContent = fmtDias(s.restantes);
+        G('fecha-cambio-sup').textContent = 'Próximo: ' + fmtFecha(s.fecha) + ' · c/' + diasSup + 'd';
+        G('alin-bar-sup').style.width = s.pct + '%';
+        if(s.restantes === 0) G('dias-cambio-sup').style.color = '#ff4f6b';
+      }
+      if(diasInf) {
+        const i = calcCiclo(diasInf);
+        G('dias-cambio-inf').textContent = fmtDias(i.restantes);
+        G('fecha-cambio-inf').textContent = 'Próximo: ' + fmtFecha(i.fecha) + ' · c/' + diasInf + 'd';
+        G('alin-bar-inf').style.width = i.pct + '%';
+        if(i.restantes === 0) G('dias-cambio-inf').style.color = '#ff4f6b';
+      }
     }
   }
 
