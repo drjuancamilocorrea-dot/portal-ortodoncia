@@ -807,11 +807,21 @@ async function loadInicio() {
     const inicioAlin = new Date(inicioAlineadorStr + 'T12:00:00');
     const diasDesdeInicio = Math.floor((hoy - inicioAlin) / (1000*60*60*24));
 
-    const diasSup = parseInt(tieneSuperior) || parseInt(PAC.cambio_alineador_dias) || null;
-    const diasInf = parseInt(tieneInferior) || parseInt(PAC.cambio_alineador_dias) || null;
-    const mismaFrecuencia = diasSup === diasInf;
+    // Leer frecuencias: usar los nuevos campos si existen, si no usar el legacy
+    const diasSup = (tieneSuperior && parseInt(tieneSuperior) > 0) ? parseInt(tieneSuperior) 
+                  : (PAC.cambio_alineador_dias && parseInt(PAC.cambio_alineador_dias) > 0) ? parseInt(PAC.cambio_alineador_dias) 
+                  : null;
+    const diasInf = (tieneInferior && parseInt(tieneInferior) > 0) ? parseInt(tieneInferior)
+                  : (PAC.cambio_alineador_dias && parseInt(PAC.cambio_alineador_dias) > 0) ? parseInt(PAC.cambio_alineador_dias)
+                  : null;
+
+    // Frecuencias distintas solo si AMBOS campos nuevos están definidos Y son diferentes
+    const tieneAmbosNuevos = (tieneSuperior && parseInt(tieneSuperior) > 0) && (tieneInferior && parseInt(tieneInferior) > 0);
+    const mismaFrecuencia = !tieneAmbosNuevos || diasSup === diasInf;
+
+    const totalSupStr = PAC.total_alineadores_superior || PAC.total_alineadores || '?';
+    const totalInfStr = PAC.total_alineadores_inferior || PAC.total_alineadores || '?';
     const numAlineadorActual = PAC.num_alineador_actual || (diasSup ? Math.floor(diasDesdeInicio / diasSup) + 1 : '?');
-    const totalAlineadores = PAC.total_alineadores || '?';
 
     const calcCiclo = (dias) => {
       const enCiclo = diasDesdeInicio % dias;
@@ -826,30 +836,32 @@ async function loadInicio() {
     G('contador-alin').style.display = 'block';
 
     if(mismaFrecuencia && diasSup) {
-      // Display simple — igual que antes
+      // Display simple
       const { restantes, pct, fecha } = calcCiclo(diasSup);
       G('alin-simple').style.display = 'block';
       G('alin-doble').style.display = 'none';
       G('dias-cambio').textContent = fmtDias(restantes);
       G('dias-num').textContent = restantes;
-      G('fecha-cambio').textContent = 'Alineador ' + numAlineadorActual + ' de ' + totalAlineadores + ' · Próximo cambio: ' + fmtFecha(fecha);
+      G('fecha-cambio').textContent = 'Alineador ' + numAlineadorActual + ' de ' + totalSupStr + ' · Próximo cambio: ' + fmtFecha(fecha);
       G('alin-bar').style.width = pct + '%';
       if(restantes === 0) { G('dias-cambio').style.color='#ff4f6b'; G('dias-num').style.color='#ff4f6b'; }
     } else {
-      // Display doble — una card por arcada
+      // Display doble
       G('alin-simple').style.display = 'none';
       G('alin-doble').style.display = 'block';
       if(diasSup) {
         const s = calcCiclo(diasSup);
+        const numSupActual = PAC.num_alineador_actual_superior || Math.floor(diasDesdeInicio / diasSup) + 1;
         G('dias-cambio-sup').textContent = fmtDias(s.restantes);
-        G('fecha-cambio-sup').textContent = 'Próximo: ' + fmtFecha(s.fecha) + ' · c/' + diasSup + 'd';
+        G('fecha-cambio-sup').textContent = 'Alin. ' + numSupActual + ' de ' + totalSupStr + ' · ' + fmtFecha(s.fecha);
         G('alin-bar-sup').style.width = s.pct + '%';
         if(s.restantes === 0) G('dias-cambio-sup').style.color = '#ff4f6b';
       }
       if(diasInf) {
         const i = calcCiclo(diasInf);
+        const numInfActual = PAC.num_alineador_actual_inferior || Math.floor(diasDesdeInicio / diasInf) + 1;
         G('dias-cambio-inf').textContent = fmtDias(i.restantes);
-        G('fecha-cambio-inf').textContent = 'Próximo: ' + fmtFecha(i.fecha) + ' · c/' + diasInf + 'd';
+        G('fecha-cambio-inf').textContent = 'Alin. ' + numInfActual + ' de ' + totalInfStr + ' · ' + fmtFecha(i.fecha);
         G('alin-bar-inf').style.width = i.pct + '%';
         if(i.restantes === 0) G('dias-cambio-inf').style.color = '#ff4f6b';
       }
