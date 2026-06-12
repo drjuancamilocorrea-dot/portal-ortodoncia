@@ -838,11 +838,14 @@ async function loadInicio() {
     if(mismaFrecuencia && diasSup) {
       // Display simple
       const { restantes, pct, fecha } = calcCiclo(diasSup);
+      // Número actual: si hay manual lo usa, si no calcula desde fecha inicio
+      const baseNum = PAC.num_alineador_actual_superior || PAC.num_alineador_actual || null;
+      const numActual = baseNum ? baseNum : Math.floor(diasDesdeInicio / diasSup) + 1;
       G('alin-simple').style.display = 'block';
       G('alin-doble').style.display = 'none';
       G('dias-cambio').textContent = fmtDias(restantes);
       G('dias-num').textContent = restantes;
-      G('fecha-cambio').textContent = 'Alineador ' + numAlineadorActual + ' de ' + totalSupStr + ' · Próximo cambio: ' + fmtFecha(fecha);
+      G('fecha-cambio').textContent = 'Alineador ' + numActual + ' de ' + totalSupStr + ' · Próximo cambio: ' + fmtFecha(fecha);
       G('alin-bar').style.width = pct + '%';
       if(restantes === 0) { G('dias-cambio').style.color='#ff4f6b'; G('dias-num').style.color='#ff4f6b'; }
     } else {
@@ -851,7 +854,8 @@ async function loadInicio() {
       G('alin-doble').style.display = 'block';
       if(diasSup) {
         const s = calcCiclo(diasSup);
-        const numSupActual = PAC.num_alineador_actual_superior || Math.floor(diasDesdeInicio / diasSup) + 1;
+        const baseSup = PAC.num_alineador_actual_superior || null;
+        const numSupActual = baseSup ? baseSup : Math.floor(diasDesdeInicio / diasSup) + 1;
         G('dias-cambio-sup').textContent = fmtDias(s.restantes);
         G('fecha-cambio-sup').textContent = 'Alin. ' + numSupActual + ' de ' + totalSupStr + ' · ' + fmtFecha(s.fecha);
         G('alin-bar-sup').style.width = s.pct + '%';
@@ -859,7 +863,8 @@ async function loadInicio() {
       }
       if(diasInf) {
         const i = calcCiclo(diasInf);
-        const numInfActual = PAC.num_alineador_actual_inferior || Math.floor(diasDesdeInicio / diasInf) + 1;
+        const baseInf = PAC.num_alineador_actual_inferior || null;
+        const numInfActual = baseInf ? baseInf : Math.floor(diasDesdeInicio / diasInf) + 1;
         G('dias-cambio-inf').textContent = fmtDias(i.restantes);
         G('fecha-cambio-inf').textContent = 'Alin. ' + numInfActual + ' de ' + totalInfStr + ' · ' + fmtFecha(i.fecha);
         G('alin-bar-inf').style.width = i.pct + '%';

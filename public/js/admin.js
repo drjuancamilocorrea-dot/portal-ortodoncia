@@ -766,6 +766,8 @@ function abrirFin(id) {
   G('mf-cambio-inferior').value = pres.cambio_dias_inferior ?? p.cambio_dias_inferior ?? pres.cambio_alineador_dias ?? p.cambio_alineador_dias ?? '';
   G('mf-total-sup').value = p.total_alineadores_superior || p.total_alineadores || '';
   G('mf-total-inf').value = p.total_alineadores_inferior || p.total_alineadores || '';
+  G('mf-actual-sup').value = p.num_alineador_actual_superior || '';
+  G('mf-actual-inf').value = p.num_alineador_actual_inferior || '';
   G('mf-monto').value=''; G('mf-desc').value='';
   toggleAlineadorOpts();
   calcCuota();
@@ -830,7 +832,9 @@ G('btn-save-presup').addEventListener('click',async()=>{
     cambio_dias_inferior: esAlin ? parseInt(G('mf-cambio-inferior').value)||null : null,
     inicio_alineador: esAlin ? (G('mf-inicio-alineador').value || null) : null,
     total_alineadores_superior: esAlin ? parseInt(G('mf-total-sup').value)||null : null,
-    total_alineadores_inferior: esAlin ? parseInt(G('mf-total-inf').value)||null : null
+    total_alineadores_inferior: esAlin ? parseInt(G('mf-total-inf').value)||null : null,
+    num_alineador_actual_superior: esAlin ? parseInt(G('mf-actual-sup').value)||null : null,
+    num_alineador_actual_inferior: esAlin ? parseInt(G('mf-actual-inf').value)||null : null
   };
   const d=await apiPut(`/api/admin/pacientes/${id}/presupuesto`, body);
   if(d.ok){

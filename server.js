@@ -159,6 +159,8 @@ app.put('/api/admin/pacientes/:id/presupuesto', adminAuth, async (req, res) => {
   if (req.body.inicio_alineador !== undefined) db.pacientes[idx].inicio_alineador = req.body.inicio_alineador;
   if (req.body.total_alineadores_superior !== undefined) db.pacientes[idx].total_alineadores_superior = req.body.total_alineadores_superior;
   if (req.body.total_alineadores_inferior !== undefined) db.pacientes[idx].total_alineadores_inferior = req.body.total_alineadores_inferior;
+  if (req.body.num_alineador_actual_superior !== undefined) db.pacientes[idx].num_alineador_actual_superior = req.body.num_alineador_actual_superior;
+  if (req.body.num_alineador_actual_inferior !== undefined) db.pacientes[idx].num_alineador_actual_inferior = req.body.num_alineador_actual_inferior;
   if (req.body.total_alineadores) db.pacientes[idx].total_alineadores = req.body.total_alineadores;
   // Actualizar tratamiento del paciente con el tipo de ortodoncia del presupuesto
   if (req.body.tipo_ortodoncia) db.pacientes[idx].tratamiento = req.body.tipo_ortodoncia;
