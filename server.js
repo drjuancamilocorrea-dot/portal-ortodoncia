@@ -154,6 +154,9 @@ app.put('/api/admin/pacientes/:id/presupuesto', adminAuth, async (req, res) => {
   campos.forEach(c => { if (req.body[c] !== undefined) db.pacientes[idx].presupuesto[c] = req.body[c]; });
   // Guardar frecuencia de cambio de alineador en el perfil del paciente
   if (req.body.cambio_alineador_dias) db.pacientes[idx].cambio_alineador_dias = req.body.cambio_alineador_dias;
+  if (req.body.cambio_dias_superior !== undefined) db.pacientes[idx].cambio_dias_superior = req.body.cambio_dias_superior;
+  if (req.body.cambio_dias_inferior !== undefined) db.pacientes[idx].cambio_dias_inferior = req.body.cambio_dias_inferior;
+  if (req.body.inicio_alineador !== undefined) db.pacientes[idx].inicio_alineador = req.body.inicio_alineador;
   if (req.body.total_alineadores) db.pacientes[idx].total_alineadores = req.body.total_alineadores;
   // Actualizar tratamiento del paciente con el tipo de ortodoncia del presupuesto
   if (req.body.tipo_ortodoncia) db.pacientes[idx].tratamiento = req.body.tipo_ortodoncia;
@@ -1208,12 +1211,18 @@ app.post('/api/admin/whatsapp/recordatorios-masivos', adminAuth, async (req, res
   const hoy = new Date();
   const resultados = [];
   for (const p of db.pacientes) {
-    if (!p.cambio_alineador_dias || !p.telefono) continue;
-    const inicio = new Date(p.inicio + 'T12:00:00');
+    if (!p.telefono) continue;
+    const diasSup = p.cambio_dias_superior || p.cambio_alineador_dias;
+    const diasInf = p.cambio_dias_inferior || p.cambio_alineador_dias;
+    if (!diasSup && !diasInf) continue;
+    const inicioStr = p.inicio_alineador || p.inicio;
+    const inicio = new Date(inicioStr + 'T12:00:00');
     const diasDesdeInicio = Math.floor((hoy - inicio) / (1000 * 60 * 60 * 24));
-    const diasEnCiclo = diasDesdeInicio % p.cambio_alineador_dias;
-    if (diasEnCiclo === 0 && diasDesdeInicio > 0) {
-      const r = await enviarWhatsApp(p.telefono, `¡Hola ${p.nombre.split(' ')[0]}! 🔄 Hoy es tu día de cambio de alineador. No olvides los ejercicios de apretamiento: 20 mañana + 20 noche con el mordedor. ¡Vas muy bien! 🦷`);
+    const esCambioSup = diasSup && diasDesdeInicio > 0 && diasDesdeInicio % diasSup === 0;
+    const esCambioInf = diasInf && diasDesdeInicio > 0 && diasDesdeInicio % diasInf === 0;
+    if (esCambioSup || esCambioInf) {
+      const arcada = (esCambioSup && esCambioInf) ? '' : esCambioSup ? ' (arcada superior)' : ' (arcada inferior)';
+      const r = await enviarWhatsApp(p.telefono, `¡Hola ${p.nombre.split(' ')[0]}! 🔄 Hoy es tu día de cambio de alineador${arcada}. No olvides los ejercicios de apretamiento: 20 mañana + 20 noche con el mordedor. ¡Vas muy bien! 🦷`);
       resultados.push({ paciente: p.nombre, ...r });
     }
   }

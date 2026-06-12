@@ -761,7 +761,9 @@ function abrirFin(id) {
   G('mf-cuota-inicial').value = pres.cuota_inicial || '';
   G('mf-num-cuotas').value = pres.num_cuotas || '';
   G('mf-notas').value = pres.notas || '';
-  G('mf-cambio-dias').value = pres.cambio_alineador_dias || p.cambio_alineador_dias || '';
+  G('mf-inicio-alineador').value = pres.inicio_alineador || p.inicio_alineador || '';
+  G('mf-cambio-superior').value = pres.cambio_dias_superior ?? p.cambio_dias_superior ?? pres.cambio_alineador_dias ?? p.cambio_alineador_dias ?? '';
+  G('mf-cambio-inferior').value = pres.cambio_dias_inferior ?? p.cambio_dias_inferior ?? pres.cambio_alineador_dias ?? p.cambio_alineador_dias ?? '';
   G('mf-monto').value=''; G('mf-desc').value='';
   toggleAlineadorOpts();
   calcCuota();
@@ -821,7 +823,10 @@ G('btn-save-presup').addEventListener('click',async()=>{
     num_cuotas: n,
     valor_cuota: cuota,
     notas: G('mf-notas').value,
-    cambio_alineador_dias: esAlin ? parseInt(G('mf-cambio-dias').value)||null : null
+    cambio_alineador_dias: esAlin ? (parseInt(G('mf-cambio-superior').value) || parseInt(G('mf-cambio-inferior').value) || null) : null,
+    cambio_dias_superior: esAlin ? parseInt(G('mf-cambio-superior').value)||null : null,
+    cambio_dias_inferior: esAlin ? parseInt(G('mf-cambio-inferior').value)||null : null,
+    inicio_alineador: esAlin ? (G('mf-inicio-alineador').value || null) : null
   };
   const d=await apiPut(`/api/admin/pacientes/${id}/presupuesto`, body);
   if(d.ok){

@@ -573,10 +573,22 @@
     <!-- Solo visible si es alineadores -->
     <div id="mf-alineador-opts" style="display:none;background:rgba(0,210,140,0.06);border:1px solid var(--border2);border-radius:var(--rs);padding:12px 14px;margin-bottom:1rem;">
       <div class="card-title" style="margin-bottom:10px;">Configuración de alineadores</div>
-      <div class="field" style="max-width:200px;">
-        <label>Frecuencia de cambio (días)</label>
-        <input type="number" id="mf-cambio-dias" placeholder="Ej: 14" min="7" max="30">
-        <p style="font-size:11px;color:var(--text2);margin-top:4px;">Cada cuántos días cambia al siguiente alineador</p>
+      <div class="field">
+        <label>Fecha de inicio del tratamiento con alineadores</label>
+        <input type="date" id="mf-inicio-alineador">
+        <p style="font-size:11px;color:var(--text2);margin-top:4px;">Fecha en que el paciente recibió sus primeros alineadores</p>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Frecuencia de cambio — Superior (días)</label>
+          <input type="number" id="mf-cambio-superior" placeholder="Ej: 14" min="7" max="30">
+          <p style="font-size:11px;color:var(--text2);margin-top:4px;">Arcada superior</p>
+        </div>
+        <div class="field">
+          <label>Frecuencia de cambio — Inferior (días)</label>
+          <input type="number" id="mf-cambio-inferior" placeholder="Ej: 14" min="7" max="30">
+          <p style="font-size:11px;color:var(--text2);margin-top:4px;">Arcada inferior</p>
+        </div>
       </div>
     </div>
 
