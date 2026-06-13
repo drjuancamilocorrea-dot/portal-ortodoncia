@@ -1112,6 +1112,18 @@ async function loadFin() {
   });
 }
 
+function renderMd(txt) {
+  return txt
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^## (.+)$/gm,'<p style="font-size:13px;font-weight:700;color:var(--accent);margin:8px 0 2px;">$1</p>')
+    .replace(/^### (.+)$/gm,'<p style="font-size:12px;font-weight:700;color:var(--text);margin:6px 0 2px;">$1</p>')
+    .replace(/^- (.+)$/gm,'<p style="margin:2px 0 2px 10px;">• $1</p>')
+    .replace(/^---$/gm,'<hr style="border:none;border-top:1px solid var(--border);margin:8px 0;">')
+    .replace(/\n/g,'<br>');
+}
+
 async function sendChat(msg) {
   if(!msg) return;
   const msgs=G('chat-msgs');
@@ -1122,7 +1134,7 @@ async function sendChat(msg) {
   const d=await apiPost('/api/chat',{mensaje:msg,historial:chatHist.slice(-8),tratamiento:PAC?.tratamiento});
   G('typing')?.remove();
   if(d.respuesta){
-    msgs.innerHTML+=`<div class="msg bot">${d.respuesta.replace(/\n/g,'<br>')}</div>`;
+    msgs.innerHTML+=`<div class="msg bot">${renderMd(d.respuesta)}</div>`;
     chatHist.push({role:'assistant',content:d.respuesta});
   } else {
     msgs.innerHTML+=`<div class="msg bot" style="color:var(--danger);">Error: ${d.error}</div>`;

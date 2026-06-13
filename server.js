@@ -608,6 +608,33 @@ app.post('/api/chat', auth, async (req, res) => {
 
   const tipoCita = paciente?.tratamiento?.toLowerCase().includes('alineador') ? 'alineadores' : 'brackets';
 
+  // Construir contexto de alineadores
+  const esAlineador = (paciente?.tratamiento || '').toLowerCase().includes('alineador');
+  let alineadorInfo = 'No aplica (no es tratamiento con alineadores)';
+  if (esAlineador) {
+    const diasSup = paciente?.cambio_dias_superior || paciente?.cambio_alineador_dias;
+    const diasInf = paciente?.cambio_dias_inferior || paciente?.cambio_alineador_dias;
+    const inicioAlin = paciente?.inicio_alineador || paciente?.inicio;
+    const totalSup = paciente?.total_alineadores_superior || paciente?.total_alineadores || '?';
+    const totalInf = paciente?.total_alineadores_inferior || paciente?.total_alineadores || '?';
+    const numActualSup = paciente?.num_alineador_actual_superior || '?';
+    const numActualInf = paciente?.num_alineador_actual_inferior || '?';
+
+    // Calcular días restantes para cada arcada
+    const calcRestantes = (dias, inicio) => {
+      if (!dias || !inicio) return null;
+      const inicioDate = new Date(inicio + 'T12:00:00');
+      const diasTranscurridos = Math.floor((hoy - inicioDate) / (1000*60*60*24));
+      return dias - (diasTranscurridos % dias);
+    };
+    const restSup = calcRestantes(diasSup, inicioAlin);
+    const restInf = calcRestantes(diasInf, inicioAlin);
+
+    alineadorInfo = `Fecha inicio alineadores: ${inicioAlin || 'No registrada'}
+Arcada superior: Alineador ${numActualSup} de ${totalSup} | Cambio cada ${diasSup || '?'} días | Faltan ${restSup !== null ? restSup + ' días' : '?'} para cambio
+Arcada inferior: Alineador ${numActualInf} de ${totalInf} | Cambio cada ${diasInf || '?'} días | Faltan ${restInf !== null ? restInf + ' días' : '?'} para cambio`;
+  }
+
   // Construir contexto completo del paciente
   const totalPagado = (paciente?.presupuesto?.abonos || []).reduce((s, a) => s + (a.monto || 0), 0);
   const saldoPendiente = (paciente?.presupuesto?.total || 0) - totalPagado;
@@ -650,6 +677,9 @@ Saldo pendiente: $${saldoPendiente.toLocaleString('es-CO')}
 Cuota mensual: $${(paciente?.presupuesto?.valor_cuota || 0).toLocaleString('es-CO')}
 Últimos abonos:
 ${abonos}
+
+═══ ALINEADORES ═══
+${alineadorInfo}
 
 ═══ ELÁSTICOS ═══
 Elástico actual: ${elasticoActual || 'No tiene elásticos asignados'}
